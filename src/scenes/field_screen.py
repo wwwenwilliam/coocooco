@@ -137,10 +137,10 @@ class FieldScreen(Screen):
         for bird in self.birds:
             bird.draw(surface, self.scroll_x)
             
-        font = pygame.font.Font(None, 36)
-        text = font.render("Field Screen", True, (0, 0, 0))
-        text_rect = text.get_rect(center=(self.window_size[0]//2, self.window_size[1]//2))
-        surface.blit(text, text_rect)
+        # font = pygame.font.Font(None, 36)
+        # text = font.render("Field Screen", True, (0, 0, 0))
+        # text_rect = text.get_rect(center=(self.window_size[0]//2, self.window_size[1]//2))
+        # surface.blit(text, text_rect)
 
     def cleanup(self):
         if self.camera_button:
