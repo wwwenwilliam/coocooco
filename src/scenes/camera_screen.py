@@ -5,8 +5,8 @@ import pygame.camera
 from src.scenes.screen import Screen
 
 class CameraScreen(Screen):
-    def __init__(self, manager, window_size):
-        super().__init__(manager, window_size)
+    def __init__(self, screen_manager, manager, window_size):
+        super().__init__(screen_manager, manager, window_size)
         self.ui_elements = []
         self.cam = None
         self.camera_surface = None
@@ -27,12 +27,12 @@ class CameraScreen(Screen):
     def setup(self):
         # Create UI elements
         # Back Button (Top Left)
-        back_btn = pygame_gui.elements.UIButton(
+        self.back_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((10, 10), (100, 40)),
             text='Back',
             manager=self.manager
         )
-        self.ui_elements.append(back_btn)
+        self.ui_elements.append(self.back_btn)
 
         # Capture Button (Bottom Center-ish)
         # Centered horizontally, near bottom
@@ -47,6 +47,11 @@ class CameraScreen(Screen):
             manager=self.manager
         )
         self.ui_elements.append(capture_btn)
+
+    def process_event(self, event):
+        if event.type == pygame_gui.UI_BUTTON_PRESSED:
+            if event.ui_element == self.back_btn:
+                self.screen_manager.switch_to('field')
 
     def draw(self, surface):
         # Draw camera feed

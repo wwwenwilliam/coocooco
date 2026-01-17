@@ -3,11 +3,14 @@ import pygame
 import pygame_gui
 
 class BirdchiveScreen(Screen):
-    def __init__(self, manager, window_size):
-        super().__init__(manager, window_size)
+    def __init__(self, screen_manager, manager, window_size):
+        super().__init__(screen_manager, manager, window_size)
 
     def setup(self):
         # Placeholder
+        pass
+
+    def process_event(self, event):
         pass
 
     def update(self, time_delta):

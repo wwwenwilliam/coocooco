@@ -27,6 +27,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         manager.process_events(event)
+        screen_manager.process_event(event)
 
     ## update
     manager.update(time_delta)
