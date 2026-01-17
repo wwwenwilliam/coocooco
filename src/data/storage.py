@@ -81,3 +81,17 @@ def delete_bird(bird_id):
 def get_birds_by_status(status):
     """Returns filtered list of birds."""
     return [b for b in load_birds() if b.get('status') == status]
+
+def update_bird_data(bird_id, updates):
+    """Updates arbitrary fields on a specific bird."""
+    birds = load_birds()
+    found = False
+    for bird in birds:
+        if bird.get('id') == bird_id:
+            bird.update(updates)
+            found = True
+            break
+    
+    if found:
+        return save_all_birds(birds)
+    return False

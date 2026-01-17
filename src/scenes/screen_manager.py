@@ -1,7 +1,6 @@
 
 from src.scenes.camera_screen import CameraScreen
 from src.scenes.birdchive_screen import BirdchiveScreen
-from src.scenes.tweeter_screen import TweeterScreen
 from src.scenes.field_screen import FieldScreen
 from src.scenes.randomevent_screen import RandomEventScreen
 
@@ -15,7 +14,6 @@ class ScreenManager:
         # Initialize all screens
         self.screens['camera'] = CameraScreen(self, manager, window_size)
         self.screens['birdchive'] = BirdchiveScreen(self, manager, window_size)
-        self.screens['tweeter'] = TweeterScreen(self, manager, window_size)
         self.screens['field'] = FieldScreen(self, manager, window_size)
         self.screens['random_event'] = RandomEventScreen(self, manager, window_size)
 
