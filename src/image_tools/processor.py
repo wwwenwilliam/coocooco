@@ -36,9 +36,51 @@ def identify_bird(image_path):
         results = classifier(image_path)
         
         # Returns list like [{'label': 'species', 'score': 0.9}, ...]
+        # Returns list like [{'label': 'species', 'score': 0.9}, ...]
         if results and len(results) > 0:
-            top_result = results[0]
-            return top_result['label']
+            print(f"--- Classification Results for {os.path.basename(image_path)} ---")
+            for r in results:
+                print(f"  {r['label']}: {r['score']:.4f}")
+            print("--------------------------------------------------")
+
+            # Immediate check: If Top Result contains "loony", abort immediately.
+            top_label_lower = results[0]['label'].lower()
+            # print(f"Checking Top Result '{results[0]['label']}' for restriction 'loony'...")
+            
+            if "looney" in top_label_lower:
+                print(f"Top classifier result is restricted ('{results[0]['label']}'). Returning 'Unknown Bird'.")
+                return "Unknown Bird"
+
+            # User wants to prioritize specific keywords: "dove", "owl", "sparrow", "pigeon"
+            priority_keywords = ["dove", "owl", "sparrow", "pigeon"]
+            
+            best_priority_result = None
+            
+            for result in results:
+                label_lower = result['label'].lower()
+                for keyword in priority_keywords:
+                    if keyword in label_lower:
+                        if best_priority_result is None:
+                            best_priority_result = result
+                        break
+                if best_priority_result:
+                    break
+            
+            final_label = None
+            if best_priority_result:
+                print(f"Priority Keyword Match: '{best_priority_result['label']}' (Score: {best_priority_result['score']:.4f})")
+                print(f"  (Selected over Top Result: '{results[0]['label']}' with score {results[0]['score']:.4f})")
+                final_label = best_priority_result['label']
+            else:
+                print(f"No priority keyword found. Using Top Result: '{results[0]['label']}'")
+                final_label = results[0]['label']
+
+            # Double check final label (mostly redundant now for Loony Bird if it's not in priority list, but safe)
+            if "looney" in final_label.lower():
+                 print(f"Blocked restricted classification: '{final_label}'. Returning 'Unknown Bird'.")
+                 return "Unknown Bird"
+            
+            return final_label
             
     except Exception as e:
         print(f"Identification failed: {e}")
