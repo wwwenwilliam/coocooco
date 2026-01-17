@@ -61,6 +61,11 @@ def main():
     # The modified class is an iterator itself (returns self in __iter__).
     anim_iter = iter(anim)
 
+    # Position variables
+    x = 0
+    y = HEIGHT // 2
+    speed = 2
+
     running = True
     while running:
         for event in pygame.event.get():
@@ -75,11 +80,17 @@ def main():
             # Should not happen if loop=True
             image = pygame.Surface((64, 64)) 
 
+        # Move sprite
+        x += speed
+        if x > WIDTH:
+            x = -image.get_width() # Reset to off-screen left
+
         # Draw
         screen.fill(BG_COLOR)
         
-        # Draw the animated sprite in the center
-        dest_rect = image.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        # Draw the animated sprite
+        # Using midleft so we can track the x position easily
+        dest_rect = image.get_rect(midleft=(x, y))
         screen.blit(image, dest_rect)
         
         pygame.display.flip()

@@ -5,7 +5,7 @@ from tkinter import filedialog
 import os
 
 # --- Configuration ---
-WIDTH, HEIGHT = 400, 800  # Dimensions mimicking a mobile screen (9:18 aspect ratio)
+WIDTH, HEIGHT = 390, 844  # Dimensions mimicking a mobile screen (9:18 aspect ratio)
 FPS = 60
 
 # Colors
