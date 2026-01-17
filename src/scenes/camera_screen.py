@@ -12,12 +12,19 @@ class CameraScreen(Screen):
         self.cam = None
         self.camera_surface = None
         
+    def setup(self):
         # Init camera
+        if self.camera_surface is None:
+             # Try to init camera here if needed or just start it
+             pass
+
+        # Init camera logic
         cameras = pygame.camera.list_cameras()
         if cameras:
             # Use the first available camera
             try:
-                self.cam = pygame.camera.Camera(cameras[0], self.window_size)
+                if self.cam is None:
+                     self.cam = pygame.camera.Camera(cameras[0], self.window_size)
                 self.cam.start()
             except Exception as e:
                 print(f"Failed to start camera: {e}")
@@ -25,7 +32,6 @@ class CameraScreen(Screen):
         else:
             print("No cameras found.")
 
-    def setup(self):
         # Create UI elements
         # Back Button (Top Left)
         self.back_btn = pygame_gui.elements.UIButton(

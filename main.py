@@ -1,17 +1,28 @@
 import pygame
 import pygame_gui
 
+# 1. Initialize Pygame immediately
 pygame.init()
 import pygame.camera
 pygame.camera.init()
 
 pygame.display.set_caption('bIrD')
 screen = pygame.display.set_mode((390, 844))
+
+# 2. Show Splash Screen
+screen.fill((255, 255, 255))
+font = pygame.font.Font(None, 48)
+text = font.render("Loading...", True, (0, 0, 0))
+text_rect = text.get_rect(center=(390//2, 844//2))
+screen.blit(text, text_rect)
+pygame.display.update()
+
+# 3. Heavy Imports (Now that window is visible)
+# This import chain triggers torch/transformers loading
+from src.scenes.screen_manager import ScreenManager
+
 manager = pygame_gui.UIManager((390, 844))
 clock = pygame.time.Clock()
-
-## import scenes
-from src.scenes.screen_manager import ScreenManager
 
 # Create Screen Manager
 screen_manager = ScreenManager(manager, (390, 844))

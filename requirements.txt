@@ -1,2 +1,6 @@
 pygame-ce
 pygame_gui
+transformers
+torch
+Pillow
+ultralytics
