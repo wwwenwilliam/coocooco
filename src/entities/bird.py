@@ -7,16 +7,34 @@ IDLE = 0
 MOVING = 1
 
 class Bird(pygame.sprite.Sprite):
-    def __init__(self, pos, bounds_rect):
+    def __init__(self, pos, bounds_rect, bird_data=None):
         super().__init__()
         self.bounds_rect = bounds_rect # (0, 0, width, height) of the world
+        self.bird_data = bird_data
         
-        # Visuals (Placeholder)
-        self.width = 50
-        self.height = 50
-        self.color = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
-        self.image = pygame.Surface((self.width, self.height))
-        self.image.fill(self.color)
+        # Visuals
+        self.width = 100
+        self.height = 100
+        self.image = None
+        
+        if bird_data:
+            # Try to load image
+            image_path = bird_data.get('cropped_path') or bird_data.get('image_path')
+            if image_path:
+                try:
+                    loaded_image = pygame.image.load(image_path)
+                    # Scale keeping aspect ratio? Or just fit to box?
+                    # For now, let's just scale to fixed size for uniformity
+                    self.image = pygame.transform.scale(loaded_image, (self.width, self.height))
+                except Exception as e:
+                    print(f"Failed to load bird image: {e}")
+
+        if self.image is None:
+            # Fallback
+            self.color = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
+            self.image = pygame.Surface((self.width, self.height))
+            self.image.fill(self.color)
+            
         self.rect = self.image.get_rect(topleft=pos)
         
         # Movement properties
@@ -69,6 +87,7 @@ class Bird(pygame.sprite.Sprite):
             world_mouse_pos = (mouse_pos[0] + scroll_x, mouse_pos[1])
             
             if self.rect.collidepoint(world_mouse_pos):
-                print(f"Clicked bird at {self.position}! Info card placeholder.")
+                species = self.bird_data.get('species', 'Unknown') if self.bird_data else 'Unknown'
+                print(f"Clicked bird: {species} at {self.position}! Info card placeholder.")
                 return True
         return False
