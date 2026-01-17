@@ -11,7 +11,7 @@ class BirdchiveScreen(Screen):
         self.bird_list = None
         self.cached_birds = [] # To map list items back to data
 
-    def setup(self):
+    def setup(self, **kwargs):
         self.back_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((10, 10), (100, 40)),
             text='Back',
@@ -31,7 +31,14 @@ class BirdchiveScreen(Screen):
         for bird in birds:
             date_str = bird.get('timestamp', 'Unknown Date').split('T')[0]
             species = bird.get('species', 'Unknown')
-            item_list.append(f"{species} ({date_str})")
+            name = bird.get('name')
+            
+            if name:
+                label = f"{name} ({species}) - {date_str}"
+            else:
+                label = f"{species} ({date_str})"
+                
+            item_list.append(label)
             
         self.bird_list = pygame_gui.elements.UISelectionList(
             relative_rect=pygame.Rect((20, 60), (self.window_size[0] - 40, self.window_size[1] - 80)),
@@ -53,7 +60,13 @@ class BirdchiveScreen(Screen):
                 for bird in self.cached_birds:
                     date_str = bird.get('timestamp', 'Unknown Date').split('T')[0]
                     species = bird.get('species', 'Unknown')
-                    label = f"{species} ({date_str})"
+                    name = bird.get('name')
+                    
+                    if name:
+                        label = f"{name} ({species}) - {date_str}"
+                    else:
+                         label = f"{species} ({date_str})"
+                         
                     if label == selection:
                         selected_bird = bird
                         break

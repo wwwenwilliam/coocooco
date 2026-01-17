@@ -8,7 +8,7 @@ class Screen(ABC):
         self.window_size = window_size
 
     @abstractmethod
-    def setup(self):
+    def setup(self, **kwargs):
         """Initialize screen resources and UI elements."""
         pass
     

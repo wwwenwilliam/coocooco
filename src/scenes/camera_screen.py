@@ -13,7 +13,7 @@ class CameraScreen(Screen):
         self.back_btn = None
         self.capture_btn = None
         
-    def setup(self):
+    def setup(self, **kwargs):
         # Initialize camera
         cameras = pygame.camera.list_cameras()
         if cameras:
@@ -59,10 +59,11 @@ class CameraScreen(Screen):
                 if self.cam:
                     try:
                         image = self.cam.get_image()
-                        success = process_image(image)
+                        bird_data = process_image(image)
                         
-                        if success:
-                            print("Image Captured and Saved!")
+                        if bird_data:
+                            print("Image Captured and Saved! Switching to Field...")
+                            self.screen_manager.switch_to('field', new_capture=bird_data)
                         else:
                             print("Failed to save image.")
                     except Exception as e:

@@ -154,10 +154,10 @@ def process_image(surface):
         }
         if save_bird(bird_data):
             print(f"Processed and saved: {filepath} (Species: {species})")
-            return True
+            return bird_data
         else:
-            return False
+            return None
 
     except Exception as e:
         print(f"Failed to process image: {e}")
-        return False
+        return None

@@ -61,6 +61,30 @@ def test_bird_anim():
     else:
         print("FAIL: Left idle sprite not loaded.")
 
+    print("\n--- Testing Pigeon ---\n")
+    pigeon = Bird((0,0), (0,0,500,500), {'species': 'Rock Pigeon'})
+    if pigeon.using_sprite:
+        print("SUCCESS: Pigeon loaded sprite.")
+    else:
+        print("FAIL: Pigeon failed to load sprite.")
+        
+    if pigeon.image_idle_left:
+        print("SUCCESS: Pigeon left idle sprite loaded.")
+    else:
+        print("FAIL: Pigeon left idle sprite NOT loaded.")
+
+    print("\n--- Testing Sparrow ---\n")
+    sparrow = Bird((0,0), (0,0,500,500), {'species': 'House Sparrow'})
+    if sparrow.using_sprite:
+        print("SUCCESS: Sparrow loaded sprite.")
+    else:
+        print("FAIL: Sparrow failed to load sprite.")
+
+    if sparrow.image_idle_left:
+        print("SUCCESS: Sparrow left idle sprite loaded.")
+    else:
+        print("FAIL: Sparrow left idle sprite NOT loaded.")
+
     pygame.quit()
 
 if __name__ == "__main__":

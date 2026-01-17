@@ -6,7 +6,7 @@ class RandomEventScreen(Screen):
     def __init__(self, screen_manager, manager, window_size):
         super().__init__(screen_manager, manager, window_size)
 
-    def setup(self):
+    def setup(self, **kwargs):
         pass
 
     def process_event(self, event):

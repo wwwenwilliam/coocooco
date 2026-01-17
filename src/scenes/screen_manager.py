@@ -19,14 +19,14 @@ class ScreenManager:
         self.screens['field'] = FieldScreen(self, manager, window_size)
         self.screens['random_event'] = RandomEventScreen(self, manager, window_size)
 
-    def switch_to(self, screen_name):
+    def switch_to(self, screen_name, **kwargs):
         """Switches to the screen with the given name."""
         if screen_name in self.screens:
-            self.set_screen(self.screens[screen_name])
+            self.set_screen(self.screens[screen_name], **kwargs)
         else:
             print(f"Screen '{screen_name}' not found.")
 
-    def set_screen(self, new_screen):
+    def set_screen(self, new_screen, **kwargs):
         """Switches to the new screen."""
         if self.current_screen:
             self.current_screen.cleanup()
@@ -35,7 +35,7 @@ class ScreenManager:
         if self.current_screen:
             # Sync window size before setup in case it changed while on another screen
             self.current_screen.window_size = self.window_size
-            self.current_screen.setup()
+            self.current_screen.setup(**kwargs)
 
     def setup(self):
         """Setup the manager itself."""

@@ -1,7 +1,7 @@
 import pygame
 import pygame_gui
-from pygame_gui.elements import UIWindow, UIButton, UILabel, UIImage
-from src.data.storage import update_bird_status
+from pygame_gui.elements import UIWindow, UIButton, UILabel, UIImage, UITextEntryLine
+from src.data.storage import update_bird_status, save_all_birds, load_birds
 
 class BirdInfoCard(UIWindow):
     def __init__(self, rect, manager, bird_data, on_close_callback=None, on_tweeter_callback=None):
@@ -26,11 +26,25 @@ class BirdInfoCard(UIWindow):
         
         # Info
         species = bird_data.get('species', 'Unknown')
-        UILabel(relative_rect=pygame.Rect((220, 10), (100, 30)), text=species, manager=manager, container=self)
+        UILabel(relative_rect=pygame.Rect((220, 10), (100, 30)), text="Species:", manager=manager, container=self)
+        UILabel(relative_rect=pygame.Rect((220, 35), (100, 30)), text=species, manager=manager, container=self)
         
+        # Name Section
+        UILabel(relative_rect=pygame.Rect((220, 70), (100, 30)), text="Name:", manager=manager, container=self)
+        
+        self.name_label = None
+        self.edit_btn = None
+        self.name_entry = None
+        
+        # Initial State
+        if 'name' in self.bird_data and self.bird_data['name']:
+            self.switch_to_view_mode()
+        else:
+            self.switch_to_edit_mode()
+
         # Archive Button
         self.archive_btn = UIButton(
-            relative_rect=pygame.Rect((220, 150), (100, 30)),
+            relative_rect=pygame.Rect((220, 170), (100, 30)),
             text='Archive',
             manager=manager,
             container=self
@@ -38,16 +52,78 @@ class BirdInfoCard(UIWindow):
 
         # Tweeter Button
         self.tweeter_btn = UIButton(
-            relative_rect=pygame.Rect((220, 190), (100, 30)),
+            relative_rect=pygame.Rect((220, 210), (100, 30)),
             text='Tweeter',
             manager=manager,
             container=self
         )
 
+    def switch_to_view_mode(self):
+        self.clear_name_ui()
+        name = self.bird_data.get('name', 'Unnamed')
+        self.name_label = UILabel(relative_rect=pygame.Rect((220, 95), (100, 30)), text=name, manager=self.ui_manager, container=self)
+        self.edit_btn = UIButton(relative_rect=pygame.Rect((220, 130), (100, 30)), text='Edit', manager=self.ui_manager, container=self)
+
+    def switch_to_edit_mode(self):
+        self.clear_name_ui()
+        self.name_entry = UITextEntryLine(
+            relative_rect=pygame.Rect((220, 95), (100, 30)),
+            manager=self.ui_manager,
+            container=self
+        )
+        if 'name' in self.bird_data:
+            self.name_entry.set_text(self.bird_data['name'])
+        self.name_entry.focus()
+
+    def clear_name_ui(self):
+        if self.name_label:
+            self.name_label.kill()
+            self.name_label = None
+        if self.edit_btn:
+            self.edit_btn.kill()
+            self.edit_btn = None
+        if self.name_entry:
+            self.name_entry.kill()
+            self.name_entry = None
+
+    def save_name(self):
+        if self.name_entry:
+            new_name = self.name_entry.get_text()
+            if new_name: # Only save if not empty? Or allow clearing? Let's assume non-empty for now or keep old
+                 if new_name != self.bird_data.get('name'):
+                    # Save name
+                    self.bird_data['name'] = new_name
+                    
+                    # Update storage
+                    birds = load_birds()
+                    found = False
+                    for b in birds:
+                        if b['id'] == self.bird_data['id']:
+                            b['name'] = new_name
+                            found = True
+                            break
+                    
+                    if found:
+                        save_all_birds(birds)
+                        print(f"Saved name '{new_name}' for bird {self.bird_data['id']}")
+            
+            # Switch back to view mode
+            self.switch_to_view_mode()
+
     def process_event(self, event):
         super().process_event(event)
+
+        # Save name on enter or lose focus? 
+        # UITextEntryLine triggers UI_TEXT_ENTRY_FINISHED on Enter
+        if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
+            if event.ui_element == self.name_entry:
+                self.save_name()
+
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            if event.ui_element == self.archive_btn:
+            if event.ui_element == self.edit_btn:
+                self.switch_to_edit_mode()
+            elif event.ui_element == self.archive_btn:
+                self.save_name() # Save name before archiving too
                 # Move to archive
                 update_bird_status(self.bird_data['id'], 'archived')
                 print(f"Archived bird {self.bird_data['id']}")
@@ -55,11 +131,12 @@ class BirdInfoCard(UIWindow):
                 if self.on_close_callback:
                     self.on_close_callback()
             elif event.ui_element == self.tweeter_btn:
+                self.save_name() # Save name before switching logic
                 if self.on_tweeter_callback:
                     self.on_tweeter_callback()
                     
     def on_close_window_button_pressed(self):
-        # Just close
+        self.save_name() # Save name on close
         super().on_close_window_button_pressed()
         if self.on_close_callback:
             self.on_close_callback()

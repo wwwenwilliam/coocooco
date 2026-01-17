@@ -26,7 +26,7 @@ class FieldScreen(Screen):
         self.tweeter_card = None
         self.pressed_bird = None
 
-    def setup(self):
+    def setup(self, **kwargs):
         try:
             self.background = pygame.image.load("assets/images/botwfield_placeholder.jpg")
             # Scale to match window height while maintaining aspect ratio
@@ -41,6 +41,19 @@ class FieldScreen(Screen):
             
             # Spawn Birds
             self.refresh_birds()
+            
+            # Check for new capture
+            if 'new_capture' in kwargs and kwargs['new_capture']:
+                 new_id = kwargs['new_capture']['id']
+                 # Find the bird sprite
+                 for bird in self.birds:
+                     if bird.bird_data['id'] == new_id:
+                         # Scroll to bird
+                         target_scroll = bird.position.x - (self.window_size[0] // 2) + (bird.width // 2)
+                         self.scroll_x = max(0, min(target_scroll, self.max_scroll))
+                         # Open card
+                         self.open_bird_card(bird)
+                         break
                 
             # UI
             btn_size = (100, 50)
@@ -58,6 +71,72 @@ class FieldScreen(Screen):
                 
         except pygame.error as e:
             print(f"Could not load background image: {e}")
+
+    def open_bird_card(self, bird):
+         """Opens the info card for the given bird sprite."""
+         # Pause THIS bird
+         bird.is_paused = True
+    
+         # Smart Positioning (World Based)
+         card_w, card_h = 330, 300
+    
+         world_width = self.window_size[0] * 2
+         if self.background:
+             world_width = self.background.get_width()
+        
+         is_left_of_world = bird.rect.centerx < (world_width // 2)
+    
+         if is_left_of_world:
+             # Bird is on left side of world -> Bubble Right
+             # Overlap bird by 40px
+             world_x = bird.rect.right - 40
+         else:
+             # Bird is on right side of world -> Bubble Left
+             # Overlap bird by 40px
+             world_x = bird.rect.left - card_w + 40
+        
+         # Vertical: "Speech bubble" -> Above bird + overlap
+         world_y = bird.rect.top - card_h + 50 
+    
+         self.card_world_pos = pygame.Vector2(world_x, world_y)
+         self.active_bird = bird
+    
+         # Calculate initial screen pos (No Clamping)
+         screen_x = int(world_x - self.scroll_x)
+         screen_y = int(world_y)
+    
+         def on_close():
+             bird.is_paused = False
+             self.active_card = None
+             self.active_bird = None
+             self.refresh_birds()
+    
+         def on_open_tweeter():
+             # Create Tweeter Card
+             # Fullscreen overlay with margin
+             margin = 50
+             width = self.window_size[0] - (margin * 2)
+             height = self.window_size[1] - (margin * 2)
+             rect = pygame.Rect(0, 0, width, height)
+             rect.center = (self.window_size[0]//2, self.window_size[1]//2)
+        
+             def on_tweeter_close():
+                 self.tweeter_card = None
+                 # Re-enable Bird Info Card
+                 if self.active_card:
+                      self.active_card.enable()
+            
+             self.tweeter_card = TweeterCard(rect, self.manager, bird.bird_data, on_close_callback=on_tweeter_close)
+        
+             # Disable active card interactions while Tweeter is up
+             if self.active_card:
+                 self.active_card.disable()
+
+         card_rect = pygame.Rect((screen_x, screen_y), (card_w, card_h))
+         self.active_card = BirdInfoCard(card_rect, self.manager, bird.bird_data, on_close_callback=on_close, on_tweeter_callback=on_open_tweeter)
+         
+         # Reset pressed_bird after successful trigger
+         self.pressed_bird = None 
 
     def process_event(self, event):
         # 1. UI Buttons (Navigation) - Always allow? 
@@ -123,70 +202,7 @@ class FieldScreen(Screen):
                     # Check if release is ALSO on the pressed bird
                     if self.pressed_bird.rect.collidepoint(world_mouse_pos):
                          # Trigger Logic
-                         bird = self.pressed_bird
-                         # Pause THIS bird
-                         bird.is_paused = True
-                    
-                         # Smart Positioning (World Based)
-                         card_w, card_h = 330, 250
-                    
-                         world_width = self.window_size[0] * 2
-                         if self.background:
-                             world_width = self.background.get_width()
-                        
-                         is_left_of_world = bird.rect.centerx < (world_width // 2)
-                    
-                         if is_left_of_world:
-                             # Bird is on left side of world -> Bubble Right
-                             # Overlap bird by 40px
-                             world_x = bird.rect.right - 40
-                         else:
-                             # Bird is on right side of world -> Bubble Left
-                             # Overlap bird by 40px
-                             world_x = bird.rect.left - card_w + 40
-                        
-                         # Vertical: "Speech bubble" -> Above bird + overlap
-                         world_y = bird.rect.top - card_h + 50 
-                    
-                         self.card_world_pos = pygame.Vector2(world_x, world_y)
-                         self.active_bird = bird
-                    
-                         # Calculate initial screen pos (No Clamping)
-                         screen_x = int(world_x - self.scroll_x)
-                         screen_y = int(world_y)
-                    
-                         def on_close():
-                             bird.is_paused = False
-                             self.active_card = None
-                             self.active_bird = None
-                             self.refresh_birds()
-                    
-                         def on_open_tweeter():
-                             # Create Tweeter Card
-                             # Fullscreen overlay with margin
-                             margin = 50
-                             width = self.window_size[0] - (margin * 2)
-                             height = self.window_size[1] - (margin * 2)
-                             rect = pygame.Rect(0, 0, width, height)
-                             rect.center = (self.window_size[0]//2, self.window_size[1]//2)
-                        
-                             def on_tweeter_close():
-                                 self.tweeter_card = None
-                                 # Re-enable Bird Info Card
-                                 if self.active_card:
-                                      self.active_card.enable()
-                            
-                             self.tweeter_card = TweeterCard(rect, self.manager, bird.bird_data, on_close_callback=on_tweeter_close)
-                        
-                             # Disable active card interactions while Tweeter is up
-                             if self.active_card:
-                                 self.active_card.disable()
-
-                         card_rect = pygame.Rect((screen_x, screen_y), (330, 250))
-                         self.active_card = BirdInfoCard(card_rect, self.manager, bird.bird_data, on_close_callback=on_close, on_tweeter_callback=on_open_tweeter)
-                    
-                         # Reset pressed_bird after successful trigger
-                         self.pressed_bird = None 
+                         self.open_bird_card(self.pressed_bird)
                 
                 # Reset pressed_bird on any UP event (release lock)
                 self.pressed_bird = None 
@@ -310,7 +326,7 @@ class FieldScreen(Screen):
         
         # 4. Update card position to follow active bird
         if self.active_card and self.active_bird:
-            card_w, card_h = 330, 250
+            card_w, card_h = 330, 300
             is_left_of_world = self.active_bird.rect.centerx < (world_width // 2)
             
             if is_left_of_world:

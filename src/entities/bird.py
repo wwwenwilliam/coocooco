@@ -42,11 +42,24 @@ class Bird(pygame.sprite.Sprite):
         self.pick_new_target()
 
     def load_sprites(self):
+        # Determine species from bird_data
+        species = "owl" # default
+        if self.bird_data and 'species' in self.bird_data:
+            s_lower = self.bird_data['species'].lower()
+            if "pigeon" in s_lower or "dove" in s_lower:
+                species = "pigeon"
+            elif "sparrow" in s_lower:
+                species = "sparrow"
+            # else remains owl/default
+        
         # Path relative to where main.py is run (project root)
-        sprite_path_right = os.path.join("assets", "sprites", "owl_walk.png")
-        sprite_path_left = os.path.join("assets", "sprites", "owl_walk_left.png")
-        idle_path_right = os.path.join("assets", "sprites", "owl_stand.PNG")
-        idle_path_left = os.path.join("assets", "sprites", "owl_stand_left.PNG")
+        # Base names: owl, pigeon, sparrow
+        # Files: {name}_walk.png, {name}_walk_left.png, {name}_stand.PNG, {name}_stand_left.PNG
+        
+        sprite_path_right = os.path.join("assets", "sprites", f"{species}_walk.png")
+        sprite_path_left = os.path.join("assets", "sprites", f"{species}_walk_left.png")
+        idle_path_right = os.path.join("assets", "sprites", f"{species}_stand.PNG")
+        idle_path_left = os.path.join("assets", "sprites", f"{species}_stand_left.PNG")
         
         self.anim_right = None
         self.anim_left = None
@@ -56,18 +69,42 @@ class Bird(pygame.sprite.Sprite):
         
         # Load Moving Sprites
         if os.path.exists(sprite_path_right):
+            # All using same strip format? Assuming yes for now based on user request "same way as owl"
             # OWL: (0, 0, 261, 340), count=2, loop=True, frames=8
-            self.anim_right = SpriteStripAnim(sprite_path_right, (0, 0, 261, 340), 2, None, True, 8)
-            # Default to right
-            self.anim_iter = iter(self.anim_right)
-            self.image = next(self.anim_iter)
-            self.width = self.image.get_width()
-            self.height = self.image.get_height()
-            self.using_sprite = True
+            # We might need to adjust rect if other birds are different sizes, but user implied same format.
+            # Let's inspect first frame to be safe? SpriteStripAnim handles it if we pass correct rect.
+            # But we are hardcoding (0, 0, 261, 340).
+            # If the other sprites are different sizes, this hardcoded rect will be wrong.
+            # We should probably get the image size first.
+            try:
+                temp_surf = pygame.image.load(sprite_path_right)
+                w, h = temp_surf.get_size()
+                # Assuming 2 frames horizontal strip
+                frame_width = w // 2
+                frame_height = h
+                self.anim_right = SpriteStripAnim(sprite_path_right, (0, 0, frame_width, frame_height), 2, None, True, 8)
+                
+                # Default to right
+                self.anim_iter = iter(self.anim_right)
+                self.image = next(self.anim_iter)
+                self.width = self.image.get_width()
+                self.height = self.image.get_height()
+                self.using_sprite = True
+            except Exception as e:
+                print(f"Error loading right sprite for {species}: {e}")
+                self.using_sprite = False
             
             # Load left if available
             if os.path.exists(sprite_path_left):
-                self.anim_left = SpriteStripAnim(sprite_path_left, (0, 0, 261, 340), 2, None, True, 8)
+                try:
+                    temp_surf = pygame.image.load(sprite_path_left)
+                    w, h = temp_surf.get_size()
+                    frame_width = w // 2
+                    frame_height = h
+                    self.anim_left = SpriteStripAnim(sprite_path_left, (0, 0, frame_width, frame_height), 2, None, True, 8)
+                except Exception as e:
+                    print(f"Error loading left sprite for {species}: {e}")
+                    self.anim_left = self.anim_right # Fallback
             else:
                 self.anim_left = self.anim_right # Fallback
         else:
@@ -81,7 +118,7 @@ class Bird(pygame.sprite.Sprite):
                 print(f"Failed to load idle sprite right: {e}")
         else:
              print(f"Warning: Idle sprite not found at {idle_path_right}")
-
+ 
         # Load Idle Sprite Left
         if os.path.exists(idle_path_left):
              try:
@@ -89,9 +126,9 @@ class Bird(pygame.sprite.Sprite):
              except Exception as e:
                 print(f"Failed to load idle sprite left: {e}")
         else:
-             print(f"Warning: Idle sprite not found at {idle_path_left}")
+             # print(f"Warning: Idle sprite not found at {idle_path_left}")
              self.image_idle_left = self.image_idle_right # Fallback
-
+ 
         # Fallback visuals if no sprite at all
         if not self.using_sprite and not self.image_idle_right:
              self.color = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
