@@ -12,20 +12,15 @@ class BirdchiveScreen(Screen):
         self.cached_birds = [] # To map list items back to data
 
     def setup(self):
-        # Header
         self.back_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((10, 10), (100, 40)),
             text='Back',
             manager=self.manager
         )
         
-        # Title
-        
-        # List
         self.refresh_list()
 
     def refresh_list(self):
-        # Clear existing list if any
         if self.bird_list:
             self.bird_list.kill()
             
@@ -34,8 +29,6 @@ class BirdchiveScreen(Screen):
         
         item_list = []
         for bird in birds:
-            # Format: "Species - Date"
-            # Date is in timestamp string usually, might want to prettify later
             date_str = bird.get('timestamp', 'Unknown Date').split('T')[0]
             species = bird.get('species', 'Unknown')
             item_list.append(f"{species} ({date_str})")
@@ -54,25 +47,8 @@ class BirdchiveScreen(Screen):
         if event.type == pygame_gui.UI_SELECTION_LIST_NEW_SELECTION:
             if event.ui_element == self.bird_list:
                 selection = event.text
-                # Find bird data matching index logic or search
-                # pygame_gui UISelectionList doesn't give index easily in event, just text.
-                # Assuming unique text for now, or just mapping by index if possible?
-                # Actually, duplicate strings behave weirdly in UISelectionList.
-                # Let's assume order is preserved?
-                # Warning: Duplicate species+date strings will be ambiguous.
-                # Ideally, UISelectionList supports object mapping, but standard one is string based.
-                # For this prototype, I'll search list for FIRST match.
-                # Better: Use loop index. But event doesn't give index.
-                # Hack: Store 'id' in the string? (ugly)
-                # Or just assume list index corresponds to selection index?
-                # UISelectionList has .get_single_selection() which might help?
-                # Let's iterate `item_list` and match text. 
-                # If multiple same entries, this might pick first one always.
-                # Good enough for prototype.
                 
-                # Find index of selection in items
-                # The event.text is the string.
-                # We can iterate our cached_birds and reconstruct string to find match.
+                # Find bird by matching reconstructed label (first match wins for duplicates)
                 selected_bird = None
                 for bird in self.cached_birds:
                     date_str = bird.get('timestamp', 'Unknown Date').split('T')[0]

@@ -101,16 +101,7 @@ class FieldScreen(Screen):
                 self.last_mouse_x = mouse_x
                 self.scroll_velocity = dx 
 
-        if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            if event.ui_element == self.camera_button:
-                self.screen_manager.switch_to('camera')
-            elif event.ui_element == self.birdchive_button:
-                self.screen_manager.switch_to('birdchive')
-        
-
-        
-        
-        # Pass events to birds - Only if no card is active
+        # Bird click handling - Only if no card is active
         if not self.active_card:
             # Handle MOUSEBUTTONDOWN for press (capture bird)
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -330,7 +321,7 @@ class FieldScreen(Screen):
             world_y = self.active_bird.rect.top - card_h + 50
             self.card_world_pos = pygame.Vector2(world_x, world_y)
         
-        # 4. Reposition Buttons
+        # 5. Reposition Buttons
         if self.camera_button:
             btn_size = (100, 50)
             rect = pygame.Rect((self.window_size[0] - btn_size[0] - 20, self.window_size[1] - btn_size[1] - 20), btn_size)

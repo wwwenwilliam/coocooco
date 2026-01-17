@@ -10,15 +10,11 @@ class CameraScreen(Screen):
         super().__init__(screen_manager, manager, window_size)
         self.ui_elements = []
         self.cam = None
-        self.camera_surface = None
+        self.back_btn = None
+        self.capture_btn = None
         
     def setup(self):
-        # Init camera
-        if self.camera_surface is None:
-             # Try to init camera here if needed or just start it
-             pass
-
-        # Init camera logic
+        # Initialize camera
         cameras = pygame.camera.list_cameras()
         if cameras:
             # Use the first available camera
@@ -48,13 +44,12 @@ class CameraScreen(Screen):
         x_pos = (self.window_size[0] - btn_width) // 2
         y_pos = self.window_size[1] - 80 
 
-        capture_btn = pygame_gui.elements.UIButton(
+        self.capture_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((x_pos, y_pos), (btn_width, btn_height)),
             text='Capture',
             manager=self.manager
         )
-        self.ui_elements.append(capture_btn)
-        self.capture_btn = capture_btn # Store reference
+        self.ui_elements.append(self.capture_btn)
 
     def process_event(self, event):
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
@@ -94,8 +89,7 @@ class CameraScreen(Screen):
             surface.blit(text, text_rect)
 
     def update(self, time_delta):
-       # Camera updates happen in draw via get_image usually, or here.
-       pass
+        pass  # Camera updates happen in draw via get_image
        
     def cleanup(self):
         if self.cam:
@@ -107,10 +101,7 @@ class CameraScreen(Screen):
 
     def resize(self, new_size):
         self.window_size = new_size
-        if self.cam:
-            # Camera might need restart if it depends on window size? Usually no.
-            pass
-            
+        
         # Reposition UI
         if self.back_btn:
             self.back_btn.set_relative_position((10, 10))

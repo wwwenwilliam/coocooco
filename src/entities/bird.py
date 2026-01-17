@@ -1,6 +1,5 @@
 import pygame
 import random
-import pygame_gui
 import os
 from .spritesheetanim import SpriteStripAnim
 
