@@ -31,3 +31,7 @@ class Screen(ABC):
     def cleanup(self):
         """Clean up screen resources and UI elements."""
         pass
+
+    def resize(self, new_size):
+        """Handle window resize. Can be overridden."""
+        self.window_size = new_size

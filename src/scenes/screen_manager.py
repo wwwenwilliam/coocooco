@@ -33,12 +33,14 @@ class ScreenManager:
         
         self.current_screen = new_screen
         if self.current_screen:
+            # Sync window size before setup in case it changed while on another screen
+            self.current_screen.window_size = self.window_size
             self.current_screen.setup()
 
     def setup(self):
         """Setup the manager itself."""
-        # Default to camera screen for now, or field
-        self.switch_to('camera')
+        # Default to field screen
+        self.switch_to('field')
 
     def process_event(self, event):
         """Delegate event processing to current screen."""
@@ -61,3 +63,12 @@ class ScreenManager:
         if self.current_screen:
             self.current_screen.cleanup()
             self.current_screen = None
+            
+    def resize(self, new_size):
+        """Handle window resize."""
+        self.window_size = new_size
+        # Notify all screens or just current? Best to update all if they store size.
+        # But simpler to just update current for now, or ensure set_screen updates it.
+        # Actually better to update current.
+        if self.current_screen and hasattr(self.current_screen, 'resize'):
+            self.current_screen.resize(new_size)

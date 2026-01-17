@@ -180,6 +180,38 @@ class Bird(pygame.sprite.Sprite):
         # Update rect for collision detection (in world space)
         self.rect.topleft = (int(self.position.x), int(self.position.y))
 
+    def update_bounds(self, new_bounds_rect):
+        """Update bounds and reposition bird proportionally (size stays fixed)."""
+        old_bounds = self.bounds_rect
+        old_world_width = old_bounds[2]
+        
+        new_world_width = new_bounds_rect[2]
+        new_world_height = new_bounds_rect[3]
+        
+        # Calculate relative position (0.0 to 1.0 across the world)
+        rel_x = self.position.x / old_world_width if old_world_width > 0 else 0.5
+        
+        # Update bounds
+        self.bounds_rect = new_bounds_rect
+        
+        # Recalculate ground_y
+        self.ground_y = new_world_height * 0.8
+        
+        # Reposition proportionally (size stays the same)
+        self.position.x = rel_x * new_world_width
+        self.position.y = self.ground_y - self.height
+        
+        # Clamp to bounds
+        self.position.x = max(0, min(self.position.x, new_world_width - self.width))
+        
+        # Update rect position (size unchanged)
+        self.rect.topleft = (int(self.position.x), int(self.position.y))
+        
+        # Update target if moving
+        if self.target:
+            self.target.y = self.ground_y - self.height
+            self.target.x = max(0, min(self.target.x, new_world_width - self.width))
+
     def draw(self, surface, scroll_x):
         # Render Transform: World -> Screen
         screen_pos = (self.rect.x - scroll_x, self.rect.y)

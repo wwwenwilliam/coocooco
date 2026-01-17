@@ -104,3 +104,20 @@ class CameraScreen(Screen):
         for element in self.ui_elements:
             element.kill()
         self.ui_elements.clear()
+
+    def resize(self, new_size):
+        self.window_size = new_size
+        if self.cam:
+            # Camera might need restart if it depends on window size? Usually no.
+            pass
+            
+        # Reposition UI
+        if self.back_btn:
+            self.back_btn.set_relative_position((10, 10))
+            
+        if self.capture_btn:
+             btn_width = 120
+             btn_height = 50
+             x_pos = (self.window_size[0] - btn_width) // 2
+             y_pos = self.window_size[1] - 80 
+             self.capture_btn.set_relative_position((x_pos, y_pos))

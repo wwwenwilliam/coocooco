@@ -24,3 +24,6 @@ class TweeterScreen(Screen):
 
     def cleanup(self):
         pass
+
+    def resize(self, new_size):
+        self.window_size = new_size

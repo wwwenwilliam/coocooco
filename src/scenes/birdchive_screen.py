@@ -106,3 +106,14 @@ class BirdchiveScreen(Screen):
         if self.bird_list:
             self.bird_list.kill()
             self.bird_list = None
+
+    def resize(self, new_size):
+        self.window_size = new_size
+        
+        if self.back_button:
+            self.back_button.set_relative_position((10, 10))
+            
+        if self.bird_list:
+            # Resize the list
+            self.bird_list.set_relative_position((20, 60))
+            self.bird_list.set_dimensions((self.window_size[0] - 40, self.window_size[1] - 80))

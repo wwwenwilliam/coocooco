@@ -22,6 +22,7 @@ class FieldScreen(Screen):
         self.friction = 0.92
         self.active_card = None
         self.card_world_pos = None
+        self.active_bird = None
         self.tweeter_card = None
         self.pressed_bird = None
 
@@ -157,6 +158,7 @@ class FieldScreen(Screen):
                          world_y = bird.rect.top - card_h + 50 
                     
                          self.card_world_pos = pygame.Vector2(world_x, world_y)
+                         self.active_bird = bird
                     
                          # Calculate initial screen pos (No Clamping)
                          screen_x = int(world_x - self.scroll_x)
@@ -165,6 +167,7 @@ class FieldScreen(Screen):
                          def on_close():
                              bird.is_paused = False
                              self.active_card = None
+                             self.active_bird = None
                              self.refresh_birds()
                     
                          def on_open_tweeter():
@@ -231,6 +234,16 @@ class FieldScreen(Screen):
             
 
     def cleanup(self):
+        # Close any open cards first
+        if self.active_card:
+            self.active_card.kill()
+            self.active_card = None
+            self.card_world_pos = None
+            
+        if self.tweeter_card:
+            self.tweeter_card.kill()
+            self.tweeter_card = None
+            
         if self.camera_button:
             self.camera_button.kill()
             self.camera_button = None
@@ -269,3 +282,62 @@ class FieldScreen(Screen):
                 y = random.randint(50, height - 200) 
                 bird = Bird((x, y), (0, 0, world_width, height), bird_data)
                 self.birds.add(bird)
+
+    def resize(self, new_size):
+        self.window_size = new_size
+        
+        # 1. Update Background for new height
+        if self.background: 
+            # Ideally we keep original loaded to avoid degradation, but for now re-load or store original
+            # Let's just re-scale the current background? No, that degrades quality.
+            # Best to reload.
+            try:
+                original = pygame.image.load("assets/images/botwfield_placeholder.jpg")
+                o_w, o_h = original.get_size()
+                aspect = o_w / o_h
+                new_h = self.window_size[1]
+                new_w = int(new_h * aspect)
+                self.background = pygame.transform.scale(original, (new_w, new_h))
+            except:
+                pass
+
+        # 2. Update Scroll Limit
+        # World width is fixed by background usually, but if dynamic:
+        if self.background:
+             world_width = self.background.get_width()
+        else:
+             world_width = self.window_size[0] * 2
+        
+        self.max_scroll = max(0, world_width - self.window_size[0])
+        self.scroll_x = min(self.scroll_x, self.max_scroll)
+        
+        # 3. Update bird bounds proportionally
+        if self.background:
+            new_bounds = (0, 0, world_width, self.window_size[1])
+            for bird in self.birds:
+                bird.update_bounds(new_bounds)
+        
+        # 4. Update card position to follow active bird
+        if self.active_card and self.active_bird:
+            card_w, card_h = 330, 250
+            is_left_of_world = self.active_bird.rect.centerx < (world_width // 2)
+            
+            if is_left_of_world:
+                world_x = self.active_bird.rect.right - 40
+            else:
+                world_x = self.active_bird.rect.left - card_w + 40
+            
+            world_y = self.active_bird.rect.top - card_h + 50
+            self.card_world_pos = pygame.Vector2(world_x, world_y)
+        
+        # 4. Reposition Buttons
+        if self.camera_button:
+            btn_size = (100, 50)
+            rect = pygame.Rect((self.window_size[0] - btn_size[0] - 20, self.window_size[1] - btn_size[1] - 20), btn_size)
+            self.camera_button.set_relative_position(rect.topleft)
+            
+        if self.birdchive_button:
+             btn_size = (100, 50)
+             rect = pygame.Rect((20, self.window_size[1] - btn_size[1] - 20), btn_size)
+             self.birdchive_button.set_relative_position(rect.topleft)
+
