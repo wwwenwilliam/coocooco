@@ -43,6 +43,7 @@ class Bird(pygame.sprite.Sprite):
         self.speed = 2.0
         self.state = IDLE
         self.idle_timer = 0
+        self.is_paused = False
         self.pick_new_target()
 
     def pick_new_target(self):
@@ -53,6 +54,9 @@ class Bird(pygame.sprite.Sprite):
         self.state = MOVING
 
     def update(self, dt):
+        if self.is_paused:
+            return
+
         if self.state == MOVING and self.target:
             direction = self.target - self.position
             distance = direction.length()
