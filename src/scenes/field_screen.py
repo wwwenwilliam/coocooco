@@ -23,6 +23,7 @@ class FieldScreen(Screen):
         self.active_card = None
         self.card_world_pos = None
         self.tweeter_card = None
+        self.pressed_bird = None
 
     def setup(self):
         try:
@@ -110,62 +111,91 @@ class FieldScreen(Screen):
         
         # Pass events to birds - Only if no card is active
         if not self.active_card:
-            for bird in self.birds:
-                if bird.handle_event(event, self.scroll_x):
-                    # Pause THIS bird
-                    bird.is_paused = True
+            # Handle MOUSEBUTTONDOWN for press (capture bird)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                world_mouse_pos = (mouse_pos[0] + self.scroll_x, mouse_pos[1])
+                
+                # Iterate reversed (top-most first)
+                for bird in list(self.birds)[::-1]:
+                    if bird.rect.collidepoint(world_mouse_pos):
+                        self.pressed_bird = bird
+                        break # Only press the top one
+            
+            # Handle MOUSEBUTTONUP for release (trigger if same bird)
+            elif event.type == pygame.MOUSEBUTTONUP:
+                mouse_pos = pygame.mouse.get_pos()
+                world_mouse_pos = (mouse_pos[0] + self.scroll_x, mouse_pos[1])
+                
+                if self.pressed_bird:
+                    # Check if release is ALSO on the pressed bird
+                    if self.pressed_bird.rect.collidepoint(world_mouse_pos):
+                         # Trigger Logic
+                         bird = self.pressed_bird
+                         # Pause THIS bird
+                         bird.is_paused = True
                     
-                    # Calculate World Position for Card
-                    # Right of bird, top aligned
-                    world_x = bird.rect.right
-                    world_y = bird.rect.top - 20
+                         # Smart Positioning (World Based)
+                         card_w, card_h = 330, 250
                     
-                    # Check absolute bounds? 
-                    # Ideally we want it to stay relative to bird. 
-                    # We'll just store this World Pos.
-                    self.card_world_pos = pygame.Vector2(world_x, world_y)
-                    
-                    # Calculate initial screen pos
-                    screen_x = int(world_x - self.scroll_x)
-                    screen_y = int(world_y)
-                    
-                    # Clamp Y to screen (since Y doesn't scroll)
-                    if screen_y < 0: screen_y = 10
-                    if screen_y + 250 > self.window_size[1]: screen_y = self.window_size[1] - 260
-                    
-                    # Update world_pos Y to reflect the clamped Y (so it stays there)
-                    self.card_world_pos.y = screen_y 
-
-                    card_rect = pygame.Rect((screen_x, screen_y), (330, 250))
-                    
-                    def on_close():
-                        bird.is_paused = False
-                        self.active_card = None
-                        self.refresh_birds()
-                    
-                    def on_open_tweeter():
-                        # Create Tweeter Card
-                        # Fullscreen overlay with margin
-                        margin = 50
-                        width = self.window_size[0] - (margin * 2)
-                        height = self.window_size[1] - (margin * 2)
-                        rect = pygame.Rect(0, 0, width, height)
-                        rect.center = (self.window_size[0]//2, self.window_size[1]//2)
+                         world_width = self.window_size[0] * 2
+                         if self.background:
+                             world_width = self.background.get_width()
                         
-                        def on_tweeter_close():
-                            self.tweeter_card = None
-                            # Re-enable Bird Info Card
-                            if self.active_card:
-                                 self.active_card.enable()
+                         is_left_of_world = bird.rect.centerx < (world_width // 2)
+                    
+                         if is_left_of_world:
+                             # Bird is on left side of world -> Bubble Right
+                             # Overlap bird by 40px
+                             world_x = bird.rect.right - 40
+                         else:
+                             # Bird is on right side of world -> Bubble Left
+                             # Overlap bird by 40px
+                             world_x = bird.rect.left - card_w + 40
+                        
+                         # Vertical: "Speech bubble" -> Above bird + overlap
+                         world_y = bird.rect.top - card_h + 50 
+                    
+                         self.card_world_pos = pygame.Vector2(world_x, world_y)
+                    
+                         # Calculate initial screen pos (No Clamping)
+                         screen_x = int(world_x - self.scroll_x)
+                         screen_y = int(world_y)
+                    
+                         def on_close():
+                             bird.is_paused = False
+                             self.active_card = None
+                             self.refresh_birds()
+                    
+                         def on_open_tweeter():
+                             # Create Tweeter Card
+                             # Fullscreen overlay with margin
+                             margin = 50
+                             width = self.window_size[0] - (margin * 2)
+                             height = self.window_size[1] - (margin * 2)
+                             rect = pygame.Rect(0, 0, width, height)
+                             rect.center = (self.window_size[0]//2, self.window_size[1]//2)
+                        
+                             def on_tweeter_close():
+                                 self.tweeter_card = None
+                                 # Re-enable Bird Info Card
+                                 if self.active_card:
+                                      self.active_card.enable()
                             
-                        self.tweeter_card = TweeterCard(rect, self.manager, bird.bird_data, on_close_callback=on_tweeter_close)
+                             self.tweeter_card = TweeterCard(rect, self.manager, bird.bird_data, on_close_callback=on_tweeter_close)
                         
-                        # Disable active card interactions while Tweeter is up
-                        if self.active_card:
-                            self.active_card.disable()
+                             # Disable active card interactions while Tweeter is up
+                             if self.active_card:
+                                 self.active_card.disable()
 
-                    self.active_card = BirdInfoCard(card_rect, self.manager, bird.bird_data, on_close_callback=on_close, on_tweeter_callback=on_open_tweeter)
-                    break 
+                         card_rect = pygame.Rect((screen_x, screen_y), (330, 250))
+                         self.active_card = BirdInfoCard(card_rect, self.manager, bird.bird_data, on_close_callback=on_close, on_tweeter_callback=on_open_tweeter)
+                    
+                         # Reset pressed_bird after successful trigger
+                         self.pressed_bird = None 
+                
+                # Reset pressed_bird on any UP event (release lock)
+                self.pressed_bird = None 
 
     def update(self, time_delta):
         self.birds.update(time_delta)
@@ -199,10 +229,6 @@ class FieldScreen(Screen):
         for bird in self.birds:
             bird.draw(surface, self.scroll_x)
             
-        font = pygame.font.Font(None, 36)
-        text = font.render("Field Screen", True, (0, 0, 0))
-        text_rect = text.get_rect(center=(self.window_size[0]//2, self.window_size[1]//2))
-        surface.blit(text, text_rect)
 
     def cleanup(self):
         if self.camera_button:
