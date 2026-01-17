@@ -3,6 +3,7 @@ import pygame_gui
 import pygame.camera
 
 from src.scenes.screen import Screen
+from src.image_tools.processor import process_image
 
 class CameraScreen(Screen):
     def __init__(self, screen_manager, manager, window_size):
@@ -47,11 +48,24 @@ class CameraScreen(Screen):
             manager=self.manager
         )
         self.ui_elements.append(capture_btn)
+        self.capture_btn = capture_btn # Store reference
 
     def process_event(self, event):
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
             if event.ui_element == self.back_btn:
                 self.screen_manager.switch_to('field')
+            elif event.ui_element == self.capture_btn:
+                if self.cam:
+                    try:
+                        image = self.cam.get_image()
+                        success = process_image(image)
+                        
+                        if success:
+                            print("Image Captured and Saved!")
+                        else:
+                            print("Failed to save image.")
+                    except Exception as e:
+                        print(f"Capture failed: {e}")
 
     def draw(self, surface):
         # Draw camera feed
