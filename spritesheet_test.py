@@ -5,7 +5,7 @@ from spritestripanim import SpriteStripAnim
 
 # --- Constants ---
 FPS = 60
-WIDTH, HEIGHT = 400, 300
+WIDTH, HEIGHT = 390, 844
 BG_COLOR = (30, 30, 30)
 
 def create_dummy_spritesheet(filename):
@@ -44,22 +44,27 @@ def main():
     clock = pygame.time.Clock()
 
     # 1. Ensure we have a sprite sheet
-    sheet_filename = "Shrug Side-Sheet.png"
+    sheet_filename = "owl_walk.png"
     # if not os.path.exists(sheet_filename):
     #     create_dummy_spritesheet(sheet_filename)
 
+    # SPRITE SHEET DIMENSIONS --------------------------
+    # SPARROW: (0, 0, 220, 158)
+    # PIGEON: (0, 0, 240, 206)
+    # OWL: (0, 0, 261, 340)
+    # --------------------------------------------------
+
     # 2. Setup Animation
-    # (0,0,64,64) is the rect of the FIRST frame
-    # 4 is the number of frames
-    # (255, 0, 255) is the colorkey (magenta)
-    # True means loop forever
-    # 10 is the number of ticks per frame (speed)
-    anim = SpriteStripAnim(sheet_filename, (0, 0, 26, 49), 5, None, True, 10)
-    
-    # Create an iterator (required by the class implementation logic if we used 'next' manually, 
-    # but the class __add__ etc imply we might just use the object if it obeyed iterator protocol well.
-    # The modified class is an iterator itself (returns self in __iter__).
+    # Sparrow
+    anim = SpriteStripAnim(sheet_filename, (0, 0, 261, 340), 2, None, True, 8)
     anim_iter = iter(anim)
+
+    # Happy Overlay
+    # Dimensions: 302x143. Assuming standard strip.
+    # Note: Please update the '6' below to the correct number of frames if different!
+    happy_filename = "happy.png"
+    anim_happy = SpriteStripAnim(happy_filename, (0, 0, 281, 210), 2, None, True, 12)
+    happy_iter = iter(anim_happy)
 
     # Position variables
     x = 0
@@ -74,11 +79,11 @@ def main():
 
         # Update
         try:
-            # Get next frame
             image = next(anim_iter)
+            image_happy = next(happy_iter)
         except StopIteration:
-            # Should not happen if loop=True
             image = pygame.Surface((64, 64)) 
+            image_happy = pygame.Surface((302, 143))
 
         # Move sprite
         x += speed
@@ -88,10 +93,14 @@ def main():
         # Draw
         screen.fill(BG_COLOR)
         
-        # Draw the animated sprite
-        # Using midleft so we can track the x position easily
+        # Draw the animated sparrow
         dest_rect = image.get_rect(midleft=(x, y))
         screen.blit(image, dest_rect)
+
+        # Draw the happy overlay ON TOP of the sparrow
+        # Centered on the sparrow
+        happy_rect = image_happy.get_rect(center=dest_rect.center)
+        screen.blit(image_happy, happy_rect)
         
         pygame.display.flip()
         clock.tick(FPS)
