@@ -97,27 +97,7 @@ class FieldScreen(Screen):
              return
     
          # Smart Positioning (World Based)
-         base_card_w, card_h = 330, 260
-         
-         # Dynamic Width Calculation
-         species_text = bird.bird_data.get('species', 'Unknown')
-         name_text = bird.bird_data.get('name', '')
-         
-         # Estimate text width (approximate font size 16)
-         # We'll use a conservative multiplier since we can't easily access the exact font object here without deeper hookups
-         # Average char width for size 16 is roughly 8-10px. 
-         max_char_count = max(len(species_text), len(name_text))
-         estimated_text_width = max_char_count * 10
-         
-         # Info column starts at x=210. Default Label width is 110.
-         # So available text space in default card is ~110px.
-         min_text_area = 110
-         extra_width = 0
-         
-         if estimated_text_width > min_text_area:
-             extra_width = estimated_text_width - min_text_area
-             
-         card_w = base_card_w + extra_width
+         card_w, card_h = 390, 315
     
          world_width = self.window_size[0] * 2
          if self.background:

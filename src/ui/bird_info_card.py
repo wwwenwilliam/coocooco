@@ -10,73 +10,108 @@ class BirdInfoCard(UIWindow):
         self.on_close_callback = on_close_callback
         self.on_tweeter_callback = on_tweeter_callback
 
+        self.on_tweeter_callback = on_tweeter_callback
+
         # Layout
-        # Image
-        img_rect = pygame.Rect((15, 15), (180, 180))
-        # Try load image
+        
+        # 0. BACKGROUND IMAGE
+        bg_path = "assets/images/infocard2.png"
+        try:
+            bg_surf = pygame.image.load(bg_path).convert_alpha()
+            bg_surf = pygame.transform.scale(bg_surf, self.rect.size)
+            UIImage(relative_rect=pygame.Rect((0, 0), self.rect.size), 
+                    image_surface=bg_surf, 
+                    manager=manager, 
+                    container=self, 
+                    object_id='#custom_background')
+        except Exception as e:
+            print(f"Failed to load background {bg_path}: {e}")
+        
+        # Dimensions for Centering (Card W=390, H=315)
+        card_w, card_h = 390, 315
+        
+        # 1. NAME HEADER (Centered)
+        # Width 290. Margin = (390 - 290) / 2 = 50.
+        self.name_entry = UITextEntryLine(
+            relative_rect=pygame.Rect((50, 40), (290, 35)),
+            manager=manager,
+            container=self,
+            object_id='#name_header_entry'
+        )
+        self.name_entry.set_text(self.bird_data.get('name', ''))
+        
+        # 2. MIDDLE SECTION (Image + Info)
+        start_x_middle = 50
+        img_size = 140
+        y_middle = 85
+        
+        # IMAGE (Left Part of Middle)
+        img_rect = pygame.Rect((start_x_middle, y_middle), (img_size, img_size))
         image_path = bird_data.get('cropped_path') or bird_data.get('image_path')
         self.bird_image_view = None 
         
         if image_path:
              try:
-                loaded_image = pygame.image.load(image_path)
-                loaded_image = pygame.transform.scale(loaded_image, (180, 180))
-                self.bird_image_view = UIImage(relative_rect=img_rect, image_surface=loaded_image, manager=manager, container=self)
-             except:
+                loaded_image = pygame.image.load(image_path).convert_alpha()
+                loaded_image = pygame.transform.scale(loaded_image, (img_size, img_size))
+                
+                # Round the image (Rounded Rectangle)
+                mask = pygame.Surface((img_size, img_size), pygame.SRCALPHA)
+                pygame.draw.rect(mask, (255, 255, 255), (0, 0, img_size, img_size), border_radius=8)
+                
+                # Apply mask using RGBA_MULT
+                final_image = loaded_image.copy()
+                final_image.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+                
+                self.bird_image_view = UIImage(relative_rect=img_rect, image_surface=final_image, manager=manager, container=self)
+             except Exception as e:
+                print(f"Image load error: {e}")
                 UILabel(relative_rect=img_rect, text="No Image", manager=manager, container=self)
         
-        # Info
-        col_x = 210
-        # Dynamic label width based on card width
-        # self.rect.width is the total width
-        # Padding right = 10
-        label_w = self.rect.width - col_x - 10
+        # INFO COLUMN (Right Part of Middle)
+        col_x = start_x_middle + img_size + 10 
+        width = 140
         
+        # Species
         species = bird_data.get('species', 'Unknown')
-        UILabel(relative_rect=pygame.Rect((col_x, 15), (label_w, 30)), text="Species:", manager=manager, container=self, object_id='#info_header')
-        UILabel(relative_rect=pygame.Rect((col_x, 40), (label_w, 30)), text=species, manager=manager, container=self)
+        UILabel(relative_rect=pygame.Rect((col_x, y_middle), (width, 20)), text="Species:", manager=manager, container=self, object_id='#info_header')
+        UILabel(relative_rect=pygame.Rect((col_x, y_middle + 20), (width, 25)), text=species, manager=manager, container=self)
         
-        # Name Section
-        UILabel(relative_rect=pygame.Rect((col_x, 80), (label_w, 30)), text="Name:", manager=manager, container=self, object_id='#info_header')
-        
-        self.name_label = None
-        self.edit_btn = None
-        self.name_entry = None
-        
-        # Initial State
-        if 'name' in self.bird_data and self.bird_data['name']:
-            self.switch_to_view_mode()
-        else:
-            self.switch_to_edit_mode()
-
-        # Personality Label
+        # Personality / Trait Label
         personality = self.bird_data.get('personality', 'Unknown')
-        self.personality_label = UILabel(
-            relative_rect=pygame.Rect((220, 60), (150, 30)), # Wider for text
-            text=f"Trait: {personality}",
-            manager=manager,
-            container=self
-        )
+        UILabel(relative_rect=pygame.Rect((col_x, y_middle + 55), (width, 20)), text="Personality:", manager=manager, container=self, object_id='#info_header')
+        self.personality_label = UILabel(relative_rect=pygame.Rect((col_x, y_middle + 75), (width, 25)), text=f"{personality}", manager=manager, container=self)
+ 
+        # 3. BUTTONS (Bottom Centered)
+        # Btn(135) + Gap(20) + Btn(135) = 290
+        # Margin = (390 - 290) / 2 = 50
+        btn_y = 240
+        btn_w = 135
+        btn_gap = 20
+        start_x_btn = 50
 
-        # Archive/Release Button
+        # Archive/Release
         is_archived = self.bird_data.get('status') == 'archived'
         btn_text = 'Release' if is_archived else 'Archive'
 
         self.archive_btn = UIButton(
-            relative_rect=pygame.Rect((15, 210), (145, 35)),
+            relative_rect=pygame.Rect((start_x_btn, btn_y), (btn_w, 35)),
             text=btn_text,
             manager=manager,
             container=self,
             object_id='#archive_button'
         )
 
-        # Second Button (Tweeter / Delete)
+        # Tweeter / Delete
         self.tweeter_btn = None
         self.delete_btn = None
         
+        btn2_x = start_x_btn + btn_w + btn_gap
+
         if is_archived:
              self.delete_btn = UIButton(
-                relative_rect=pygame.Rect((170, 210), (145, 35)),
+                relative_rect=pygame.Rect((btn2_x, btn_y), (btn_w, 35)),
+
                 text='Delete',
                 manager=manager,
                 container=self,
@@ -84,50 +119,20 @@ class BirdInfoCard(UIWindow):
             )
         else:
             self.tweeter_btn = UIButton(
-                relative_rect=pygame.Rect((170, 210), (145, 35)),
+                relative_rect=pygame.Rect((btn2_x, btn_y), (btn_w, 35)),
                 text='Tweeter',
                 manager=manager,
                 container=self,
                 object_id='#tweeter_button'
             )
 
-    def switch_to_view_mode(self):
-        self.clear_name_ui()
-        name = self.bird_data.get('name', 'Unnamed')
-        label_w = self.rect.width - 210 - 10
-        self.name_label = UILabel(relative_rect=pygame.Rect((210, 105), (label_w, 30)), text=name, manager=self.ui_manager, container=self, object_id='#name_label')
-        self.edit_btn = UIButton(relative_rect=pygame.Rect((210, 140), (100, 30)), text='Edit', manager=self.ui_manager, container=self, object_id='#edit_button')
-
-    def switch_to_edit_mode(self):
-        self.clear_name_ui()
-        label_w = self.rect.width - 210 - 10
-        self.name_entry = UITextEntryLine(
-            relative_rect=pygame.Rect((210, 105), (label_w, 30)),
-            manager=self.ui_manager,
-            container=self,
-            object_id='#name_entry'
-        )
-        if 'name' in self.bird_data:
-            self.name_entry.set_text(self.bird_data['name'])
-        self.name_entry.focus()
-
-    def clear_name_ui(self):
-        if self.name_label:
-            self.name_label.kill()
-            self.name_label = None
-        if self.edit_btn:
-            self.edit_btn.kill()
-            self.edit_btn = None
-        if self.name_entry:
-            self.name_entry.kill()
-            self.name_entry = None
 
     def save_name(self):
         if self.name_entry:
             new_name = self.name_entry.get_text()
-            if new_name: # Only save if not empty? Or allow clearing? Let's assume non-empty for now or keep old
+            if new_name: # Only save if not empty
                  if new_name != self.bird_data.get('name'):
-                    # Save name
+                    # Save name locally
                     self.bird_data['name'] = new_name
                     
                     # Update storage
@@ -143,22 +148,18 @@ class BirdInfoCard(UIWindow):
                         save_all_birds(birds)
                         print(f"Saved name '{new_name}' for bird {self.bird_data['id']}")
             
-            # Switch back to view mode
-            self.switch_to_view_mode()
+            # No mode switch needed
 
     def process_event(self, event):
         super().process_event(event)
 
-        # Save name on enter or lose focus? 
-        # UITextEntryLine triggers UI_TEXT_ENTRY_FINISHED on Enter
+        # Save name on enter
         if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
             if event.ui_element == self.name_entry:
                 self.save_name()
 
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            if event.ui_element == self.edit_btn:
-                self.switch_to_edit_mode()
-            elif event.ui_element == self.archive_btn:
+            if event.ui_element == self.archive_btn:
                 self.save_name() # Save name before action
                 
                 if self.bird_data.get('status') == 'archived':

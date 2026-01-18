@@ -104,20 +104,17 @@
     },
     "#bird_info_card": {
         "colours": {
-            "dark_bg": "#f5f0e6",
-            "normal_bg": "#faf5eb"
+            "dark_bg": "#00000000",
+            "normal_bg": "#00000000"
         },
         "misc": {
             "enable_title_bar": "0",
-            "shape": "rounded_rectangle",
-            "shape_corner_radius": "20",
-            "border_width": "2",
-            "shadow_width": "10"
+            "border_width": "0",
+            "shadow_width": "0"
         }
     },
     "#info_header": {
         "font": {
-            "bold": "1",
             "size": "16"
         },
         "colours": {
@@ -185,7 +182,6 @@
     },
     "#tile_label_main": {
         "font": {
-            "bold": "1",
             "size": "18"
         }
     },
@@ -246,6 +242,22 @@
         "misc": {
             "shape": "rounded_rectangle",
             "shape_corner_radius": "10"
+        }
+    },
+    "#name_header_entry": {
+        "colours": {
+            "dark_bg": "#ffffff",
+            "normal_bg": "#ffffff",
+            "normal_text": "#333333",
+            "normal_border": "#cccccc"
+        },
+        "font": {
+            "size": "20"
+        },
+        "misc": {
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "6",
+            "text_horiz_alignment": "center"
         }
     },
     "#send_button": {

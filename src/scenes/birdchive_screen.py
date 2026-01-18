@@ -147,7 +147,7 @@ class BirdchiveScreen(Screen):
                     self.active_card.kill()
                     
                 bird_data = self.bird_buttons[event.ui_element]
-                card_rect = pygame.Rect((0, 0), (330, 260))
+                card_rect = pygame.Rect((0, 0), (390, 315))
                 card_rect.center = (self.window_size[0]//2, self.window_size[1]//2)
                 self.active_card = BirdInfoCard(card_rect, self.manager, bird_data, on_close_callback=self.refresh_list)
 
