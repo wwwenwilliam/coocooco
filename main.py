@@ -9,8 +9,17 @@ FULLSCREEN = False
 
 # 1. Initialize Pygame immediately
 pygame.init()
+pygame.mixer.init()
 import pygame.camera
 pygame.camera.init()
+
+# Background Music
+try:
+    pygame.mixer.music.load("assets/audio/main_theme.mp3")
+    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.play(-1)  # -1 means loop forever
+except Exception as e:
+    print(f"Could not load background music: {e}")
 
 pygame.display.set_caption('bIrD')
 
