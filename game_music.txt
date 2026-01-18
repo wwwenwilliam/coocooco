@@ -70,9 +70,3 @@ $: s(`<
 [[lt lt] [mt@3 mt] [lt lt] mt]!3
 >`)
 .bank("tr505").gain("0.1")
-
-_$: note("<eb2 db2 ab1@2>")
-.sound("gm_synth_bass_2").lpf(800).gain(2)
-.adsr(".1:.1:.5:.2")
-
-_$: n("<[5 6 2@2]!2 [5 6 8@2] [5 6 9@2]>").scale("Ab:major").sound("piano:5")
