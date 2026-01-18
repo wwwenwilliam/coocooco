@@ -32,7 +32,7 @@ pygame.display.update()
 # This import chain triggers torch/transformers loading
 from src.scenes.screen_manager import ScreenManager
 
-manager = pygame_gui.UIManager((WINDOW_WIDTH, WINDOW_HEIGHT))
+manager = pygame_gui.UIManager((WINDOW_WIDTH, WINDOW_HEIGHT), 'assets/ui/theme.json')
 clock = pygame.time.Clock()
 
 # Create Screen Manager

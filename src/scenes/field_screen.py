@@ -60,13 +60,15 @@ class FieldScreen(Screen):
             self.camera_button = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect((self.window_size[0] - btn_size[0] - 20, self.window_size[1] - btn_size[1] - 20), btn_size),
                 text='Camera',
-                manager=self.manager
+                manager=self.manager,
+                object_id='#camera_button'
             )
 
             self.birdchive_button = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect((20, self.window_size[1] - btn_size[1] - 20), btn_size),
                 text='Birdchive',
-                manager=self.manager
+                manager=self.manager,
+                object_id='#birdchive_button'
             )
                 
         except pygame.error as e:
@@ -166,6 +168,19 @@ class FieldScreen(Screen):
             if event.button == 1: # Left click
                 self.is_dragging = True
                 self.last_mouse_x = event.pos[0]
+                
+                # Close info card if clicking outside of it
+                if self.active_card and not self.tweeter_card:
+                    card_rect = self.active_card.get_abs_rect()
+                    if not card_rect.collidepoint(event.pos):
+                        # Clicked outside the card - close it
+                        if self.active_bird:
+                            self.active_bird.is_paused = False
+                        self.active_card.kill()
+                        self.active_card = None
+                        self.active_bird = None
+                        self.card_world_pos = None
+                        self.refresh_birds()
                 
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:

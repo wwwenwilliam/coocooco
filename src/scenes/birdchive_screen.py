@@ -15,7 +15,8 @@ class BirdchiveScreen(Screen):
         self.back_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((10, 10), (100, 40)),
             text='Back',
-            manager=self.manager
+            manager=self.manager,
+            object_id='#back_button'
         )
         
         self.refresh_list()
@@ -43,7 +44,8 @@ class BirdchiveScreen(Screen):
         self.bird_list = pygame_gui.elements.UISelectionList(
             relative_rect=pygame.Rect((20, 60), (self.window_size[0] - 40, self.window_size[1] - 80)),
             item_list=item_list,
-            manager=self.manager
+            manager=self.manager,
+            object_id='#birdchive_list'
         )
 
     def process_event(self, event):

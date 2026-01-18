@@ -162,14 +162,25 @@ class Bird(pygame.sprite.Sprite):
         self.target = pygame.Vector2(target_x, y)
         self.state = MOVING
         
-        # Switch animation based on direction
+        # Switch animation based on ACTUAL movement direction (after clamping)
         if self.using_sprite and self.anim_left and self.anim_right:
-            if target_x < self.position.x:
+            actual_dx = target_x - self.position.x
+            if actual_dx < 0:
+                # Moving left
                 self.anim_iter = iter(self.anim_left)
                 self.facing_right = False
-            else:
+            elif actual_dx > 0:
+                # Moving right
                 self.anim_iter = iter(self.anim_right)
                 self.facing_right = True
+            # If actual_dx == 0, no movement - keep current facing direction
+            
+            # Update image immediately to match direction (only if we have movement)
+            if actual_dx != 0:
+                try:
+                    self.image = next(self.anim_iter)
+                except StopIteration:
+                    pass
 
     def update(self, dt):
         if self.is_paused:

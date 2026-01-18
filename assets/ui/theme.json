@@ -1,0 +1,106 @@
+{
+    "#defaults": {
+        "colours": {
+            "dark_bg": "#2b2b2b",
+            "normal_bg": "#3c3c3c",
+            "hovered_bg": "#505050",
+            "disabled_bg": "#2a2a2a",
+            "normal_text": "#ffffff",
+            "hovered_text": "#ffffff",
+            "disabled_text": "#808080",
+            "normal_border": "#606060",
+            "hovered_border": "#909090"
+        }
+    },
+    "button": {
+        "colours": {
+            "normal_bg": "#ff6600",
+            "hovered_bg": "#ff8833",
+            "active_bg": "#cc5500",
+            "normal_text": "#ffffff",
+            "hovered_text": "#ffffff"
+        },
+        "misc": {
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "8"
+        }
+    },
+    "#camera_button": {
+        "colours": {
+            "normal_bg": "#00ff00",
+            "hovered_bg": "#33ff33"
+        }
+    },
+    "#birdchive_button": {
+        "colours": {
+            "normal_bg": "#9900ff",
+            "hovered_bg": "#bb33ff"
+        }
+    },
+    "#back_button": {
+        "colours": {
+            "normal_bg": "#ff9900",
+            "hovered_bg": "#ffbb33"
+        }
+    },
+    "#capture_button": {
+        "colours": {
+            "normal_bg": "#ff0099",
+            "hovered_bg": "#ff33bb",
+            "active_bg": "#cc0077"
+        }
+    },
+    "window": {
+        "colours": {
+            "dark_bg": "#f5f0e6",
+            "normal_bg": "#faf5eb"
+        }
+    },
+    "#bird_info_card": {
+        "colours": {
+            "dark_bg": "#f5f0e6",
+            "normal_bg": "#faf5eb"
+        }
+    },
+    "#tweeter_card": {
+        "colours": {
+            "dark_bg": "#e8f4e8",
+            "normal_bg": "#f0f8f0"
+        }
+    },
+    "text_entry_line": {
+        "colours": {
+            "dark_bg": "#ffffff",
+            "normal_bg": "#ffffff",
+            "normal_text": "#333333",
+            "normal_border": "#cccccc"
+        },
+        "misc": {
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "6"
+        }
+    },
+    "text_box": {
+        "colours": {
+            "dark_bg": "#ffffff",
+            "normal_bg": "#fefefe"
+        }
+    },
+    "selection_list": {
+        "colours": {
+            "dark_bg": "#ffffff",
+            "normal_bg": "#fefefe"
+        }
+    },
+    "#birdchive_list": {
+        "colours": {
+            "dark_bg": "#ff00ff",
+            "normal_bg": "#ff88ff"
+        }
+    },
+    "label": {
+        "colours": {
+            "normal_text": "#333333"
+        }
+    }
+}

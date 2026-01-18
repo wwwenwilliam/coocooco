@@ -33,7 +33,8 @@ class CameraScreen(Screen):
         self.back_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((10, 10), (100, 40)),
             text='Back',
-            manager=self.manager
+            manager=self.manager,
+            object_id='#back_button'
         )
         self.ui_elements.append(self.back_btn)
 
@@ -47,7 +48,8 @@ class CameraScreen(Screen):
         self.capture_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((x_pos, y_pos), (btn_width, btn_height)),
             text='Capture',
-            manager=self.manager
+            manager=self.manager,
+            object_id='#capture_button'
         )
         self.ui_elements.append(self.capture_btn)
 
