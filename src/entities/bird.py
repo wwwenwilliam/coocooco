@@ -209,6 +209,15 @@ class Bird(pygame.sprite.Sprite):
                     pass
 
     def update(self, dt):
+        # Check for Global CRASHOUT
+        from src.data.game_state import GlobalState
+        if GlobalState.get_instance().is_crashout:
+            # RAGE MODE: Vibrate violently
+            offset_x = random.randint(-5, 5)
+            offset_y = random.randint(-5, 5)
+            self.rect.center = self.position + pygame.Vector2(offset_x, offset_y)
+            return # Skip normal logic
+
         if self.is_paused:
             return
             

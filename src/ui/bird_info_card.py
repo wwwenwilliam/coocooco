@@ -81,6 +81,25 @@ class BirdInfoCard(UIWindow):
         personality = self.bird_data.get('personality', 'Unknown')
         UILabel(relative_rect=pygame.Rect((col_x, y_middle + 55), (width, 20)), text="Personality:", manager=manager, container=self, object_id='#info_header')
         self.personality_label = UILabel(relative_rect=pygame.Rect((col_x, y_middle + 75), (width, 25)), text=f"{personality}", manager=manager, container=self)
+
+        # Archive Status (Checked early for Layout)
+        is_archived = self.bird_data.get('status') == 'archived'
+
+        # Squawk Meter (Hidden if archived)
+        self.rage_bar = None
+        if not is_archived:
+            from pygame_gui.elements import UIProgressBar
+            from src.data.game_state import GlobalState
+            
+            UILabel(relative_rect=pygame.Rect((col_x, y_middle + 105), (width, 20)), text="Squawk Meter:", manager=manager, container=self, object_id='#info_header')
+            
+            self.rage_bar = UIProgressBar(
+                relative_rect=pygame.Rect((col_x, y_middle + 125), (width, 20)),
+                manager=manager,
+                container=self,
+                object_id='#rage_bar' 
+            )
+            self.rage_bar.set_current_progress(GlobalState.get_instance().rage_level)
  
         # 3. BUTTONS (Bottom Centered)
         # Btn(135) + Gap(20) + Btn(135) = 290
@@ -90,8 +109,7 @@ class BirdInfoCard(UIWindow):
         btn_gap = 20
         start_x_btn = 50
 
-        # Archive/Release
-        is_archived = self.bird_data.get('status') == 'archived'
+        # Archive/Release Button
         btn_text = 'Release' if is_archived else 'Archive'
 
         self.archive_btn = UIButton(
@@ -126,6 +144,13 @@ class BirdInfoCard(UIWindow):
                 object_id='#tweeter_button'
             )
 
+
+    def update(self, time_delta):
+        super().update(time_delta)
+        from src.data.game_state import GlobalState
+        current_rage = GlobalState.get_instance().rage_level
+        if self.rage_bar:
+            self.rage_bar.set_current_progress(current_rage)
 
     def save_name(self):
         if self.name_entry:

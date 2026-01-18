@@ -9,14 +9,19 @@ from src.ai.sentiment import analyze_text
 class TweeterCard(UIWindow):
     def __init__(self, rect, manager, bird_data=None, on_close_callback=None, event_data=None):
         species = bird_data.get('species', 'Bird') if bird_data else 'Bird'
-        title = f"Chat with {species}"
+        name = bird_data.get('name', '') if bird_data else ''
+        
+        display_name = name if name else species
+
+        title = f"Chat with {display_name}"
         if event_data:
-            title = f"{species} is feeling {event_data['type']}!"
+            title = f"{display_name} is feeling {event_data['type']}!"
             
-        super().__init__(rect, manager, title, draggable=False)
+        super().__init__(rect, manager, title, draggable=False, object_id='#tweeter_card')
         self.bird_data = bird_data
         self.on_close_callback = on_close_callback
-        self.species = species
+        self.species = species # Keep raw species for reference if needed
+        self.display_name = display_name
         self.event_data = event_data
         
         # Initialize backboard client
@@ -36,16 +41,17 @@ class TweeterCard(UIWindow):
              # Load previous personality or generate greeting
              personality = bird_data.get('personality', '') if bird_data else ''
              if personality:
-                 self.chat_history.append(("bird", f"*chirp* Welcome back! I remember you!"))
+                 self.chat_history.append(("bird", f"*chirp* Welcome back!"))
              else:
-                 self.chat_history.append(("bird", f"*chirp* Hello! I'm a {species}. What would you like to talk about?"))
+                 self.chat_history.append(("bird", f"*chirp* Hello! I'm {display_name}. What would you like to talk about?"))
 
         # Chat Display Area
         self.chat_display = UITextBox(
             html_text=self._format_chat_html(),
             relative_rect=pygame.Rect((10, 10), (rect.width - 20, rect.height - 110)),
             manager=manager,
-            container=self
+            container=self,
+            object_id='#chat_display'
         )
         
         # Text Input
@@ -53,7 +59,7 @@ class TweeterCard(UIWindow):
             relative_rect=pygame.Rect((10, rect.height - 90), (rect.width - 130, 40)),
             manager=manager,
             container=self,
-            placeholder_text="Type a message..."
+            object_id='#chat_input'
         )
         
         # Send Button
@@ -71,7 +77,7 @@ class TweeterCard(UIWindow):
             if sender == "user":
                 lines.append(f"<b>You:</b> {message}")
             else:
-                lines.append(f"<b>{self.species}:</b> {message}")
+                lines.append(f"<b>{self.display_name}:</b> {message}")
         return "<br><br>".join(lines)
 
     def _get_canned_response(self, user_message):
@@ -174,7 +180,7 @@ class TweeterCard(UIWindow):
         self._save_chat_data()
         
         # Trigger sentiment analysis
-        if self.event_data and self.bird_data:
+        if self.bird_data:
              self.analyze_conversation_and_update_trait()
              
         super().on_close_window_button_pressed()
@@ -188,9 +194,22 @@ class TweeterCard(UIWindow):
         
         print(f"Analyzing traits for: {user_text[:50]}...")
         
-        traits = ['Intelligent', 'Curious', 'Brave', 'Lazy', 'Friendly', 'Calm']
+        # Add 'Annoying' to detect rage-inducing content, but exclude it from personality storage
+        traits = ['Intelligent', 'Curious', 'Brave', 'Lazy', 'Friendly', 'Calm', 'Annoying']
         new_scores = analyze_text(user_text, candidate_labels=traits)
         if not new_scores: return
+
+        # Process Rage (Annoying)
+        from src.data.game_state import GlobalState
+        annoyance_score = new_scores.pop('Annoying', 0.0)
+
+        print(f"Annoying score: {annoyance_score}")
+        
+        if annoyance_score > 0.4: # Threshold
+             # Add to rage meter (Scale 0-100). E.g. 0.8 score adds 16 rage.
+             rage_add = annoyance_score * 20 
+             GlobalState.get_instance().add_rage(rage_add)
+             print(f"Rage Increased by {rage_add:.1f}! Current: {GlobalState.get_instance().rage_level:.1f}")
         
         # Load existing scores
         current_scores = self.bird_data.get('trait_scores', {})
@@ -199,7 +218,10 @@ class TweeterCard(UIWindow):
         updated_scores = {}
         alpha = 0.5 # 50% update rate
         
-        for trait in traits:
+        # Ensure we only iterate over the PERMANENT traits (excluding Annoying which was popped)
+        permanent_traits = [t for t in traits if t != 'Annoying']
+        
+        for trait in permanent_traits:
             old = current_scores.get(trait, 0.0)
             new = new_scores.get(trait, 0.0)
             updated_scores[trait] = old * (1 - alpha) + new * alpha

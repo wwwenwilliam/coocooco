@@ -272,6 +272,43 @@
             "text_cursor": "#000000"
         }
     },
-    "#chat_display": {},
-    "#chat_input": {}
+    "#chat_display": {
+        "colours": {
+            "dark_bg": "#ffffff",
+            "normal_bg": "#ffffff",
+            "normal_text": "#000000",
+            "normal_border": "#cccccc"
+        },
+        "misc": {
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "6",
+            "border_width": "1"
+        }
+    },
+    "#chat_input": {
+        "colours": {
+            "dark_bg": "#ffffff",
+            "normal_bg": "#ffffff",
+            "normal_text": "#333333",
+            "normal_border": "#cccccc",
+            "text_cursor": "#000000",
+            "selected_bg": "#e0e0e0",
+            "selected_text": "#000000"
+        },
+        "misc": {
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "6",
+            "border_width": "1"
+        }
+    },
+    "#rage_bar": {
+        "colours": {
+            "filled_bar": "#ff4444",
+            "unfilled_bar": "#400000"
+        },
+        "misc": {
+            "shape": "rounded_rectangle",
+            "shape_corner_radius": "5"
+        }
+    }
 }
