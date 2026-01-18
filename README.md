@@ -16,3 +16,5 @@ None of us have any experience with game development, which is why we chose a be
 
 ## Accomplishments that we're proud of
 We're super happy with the final aesthetic of the game. It encapsulates a relaxing environment perfect for introspection and reflection, while also being a fun interactive game! We're also proud of our idea generation process and our final execution, since we had to trim down many ideas and prioritize which features we would want to implement. 
+
+See the video demo [here](https://youtu.be/fa2mAimyceM?si=1mb9gjYYqJits-1e)
