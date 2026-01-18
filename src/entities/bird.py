@@ -60,9 +60,6 @@ class Bird(pygame.sprite.Sprite):
             # else remains owl/default
         
         # Path relative to where main.py is run (project root)
-        # Base names: owl, pigeon, sparrow
-        # Files: {name}_walk.png, {name}_walk_left.png, {name}_stand.PNG, {name}_stand_left.PNG
-        
         sprite_path_right = os.path.join("assets", "sprites", f"{species}_walk.png")
         sprite_path_left = os.path.join("assets", "sprites", f"{species}_walk_left.png")
         idle_path_right = os.path.join("assets", "sprites", f"{species}_stand.PNG")
@@ -71,22 +68,39 @@ class Bird(pygame.sprite.Sprite):
         self.anim_right = None
         self.anim_left = None
         self.anim_iter = None
-        self.image_idle_right = None
+        
+        self.anim_mad = None
+        self.anim_mad_iter = None
+        
         self.image_idle_right = None
         self.image_idle_left = None
         self.overlay_anims = {}
         self.overlay_anim_iter = None
         self.overlay_image = None
         
-        # Load Moving Sprites
+        # --- Load Mad (Rage Node) Sprites ---
+        mad_specs = {
+            "owl": {"file": "owl_mad.png", "w": 405, "h": 340},
+            "sparrow": {"file": "sparrow_mad.png", "w": 220, "h": 158},
+            "pigeon": {"file": "pigeon_mad.png", "w": 240, "h": 206},
+        }
+        
+        if species in mad_specs:
+            spec = mad_specs[species]
+            mad_path = os.path.join("assets", "sprites", spec["file"])
+            if os.path.exists(mad_path):
+                try:
+                    # 2 Frames, Loop=True, Delay=8 ticks
+                    self.anim_mad = SpriteStripAnim(mad_path, (0, 0, spec["w"], spec["h"]), 2, None, True, 8)
+                    self.anim_mad_iter = iter(self.anim_mad)
+                except Exception as e:
+                    print(f"Error loading mad sprite for {species}: {e}")
+            else:
+                # print(f"Mad sprite not found: {mad_path}")
+                pass
+
+        # --- Load Moving Sprites ---
         if os.path.exists(sprite_path_right):
-            # All using same strip format? Assuming yes for now based on user request "same way as owl"
-            # OWL: (0, 0, 261, 340), count=2, loop=True, frames=8
-            # We might need to adjust rect if other birds are different sizes, but user implied same format.
-            # Let's inspect first frame to be safe? SpriteStripAnim handles it if we pass correct rect.
-            # But we are hardcoding (0, 0, 261, 340).
-            # If the other sprites are different sizes, this hardcoded rect will be wrong.
-            # We should probably get the image size first.
             try:
                 temp_surf = pygame.image.load(sprite_path_right)
                 w, h = temp_surf.get_size()
@@ -129,7 +143,7 @@ class Bird(pygame.sprite.Sprite):
                 print(f"Failed to load idle sprite right: {e}")
         else:
              print(f"Warning: Idle sprite not found at {idle_path_right}")
- 
+
         # Load Idle Sprite Left
         if os.path.exists(idle_path_left):
              try:
@@ -137,7 +151,6 @@ class Bird(pygame.sprite.Sprite):
              except Exception as e:
                 print(f"Failed to load idle sprite left: {e}")
         else:
-             # print(f"Warning: Idle sprite not found at {idle_path_left}")
              self.image_idle_left = self.image_idle_right # Fallback
  
         # Fallback visuals if no sprite at all
@@ -211,11 +224,29 @@ class Bird(pygame.sprite.Sprite):
     def update(self, dt):
         # Check for Global CRASHOUT
         from src.data.game_state import GlobalState
-        if GlobalState.get_instance().is_crashout:
+        is_crashout = GlobalState.get_instance().is_crashout
+        
+        if is_crashout:
+            # RAGE MODE ANIMATION
+            if self.anim_mad_iter:
+                try:
+                    self.image = next(self.anim_mad_iter)
+                    self.width = self.image.get_width()
+                    self.height = self.image.get_height()
+                except StopIteration:
+                     pass
+            
             # RAGE MODE: Vibrate violently
             offset_x = random.randint(-5, 5)
             offset_y = random.randint(-5, 5)
-            self.rect.center = self.position + pygame.Vector2(offset_x, offset_y)
+            
+            # Recalculate base position with new height (so they stay on ground)
+            # self.ground_y is fixed. self.position.y should be ground_y - self.height
+            base_y = self.ground_y - self.height
+            self.position.y = base_y
+            
+            self.rect.center = (int(self.position.x + offset_x + self.width//2), 
+                                int(self.position.y + offset_y + self.height//2))
             return # Skip normal logic
 
         if self.is_paused:
@@ -248,8 +279,11 @@ class Bird(pygame.sprite.Sprite):
             except: pass
         else:
             self.overlay_image = None
-
+            
         if self.state == MOVING and self.target:
+            # Ensure Y is correct if height changed back from rage
+            self.position.y = self.ground_y - self.height
+            
             direction = self.target - self.position
             distance = direction.length()
             
@@ -263,6 +297,9 @@ class Bird(pygame.sprite.Sprite):
                 self.position += direction * self.speed
                 
         elif self.state == IDLE:
+            # Fix Y
+            self.position.y = self.ground_y - self.height
+            
             # Low chance to trigger event if IDLE
             # Higher chance to trigger event (approx 4x more common)
             # Higher chance to trigger event (approx 4x more common)
@@ -301,6 +338,11 @@ class Bird(pygame.sprite.Sprite):
         
         # Update rect for collision detection (in world space)
         self.rect.topleft = (int(self.position.x), int(self.position.y))
+        
+        if self.overlay_image:
+             # Center overlay??? or just draw at top-left?
+             # Current draw logic just blits overlay at screen_pos.
+             pass
 
     def trigger_random_event(self):
         event = get_random_event()

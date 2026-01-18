@@ -7,6 +7,8 @@ from src.data.storage import load_birds, get_birds_by_status
 from src.data.events import EVENT_HAPPY, EVENT_SAD, EVENT_ANGRY
 from src.ui.bird_info_card import BirdInfoCard
 from src.ui.tweeter_card import TweeterCard
+from src.data.game_state import GlobalState
+from pygame_gui.elements import UILabel, UIButton, UIPanel, UIImage
 
 class FieldScreen(Screen):
     def __init__(self, screen_manager, manager, window_size):
@@ -27,6 +29,11 @@ class FieldScreen(Screen):
         self.active_bird = None
         self.tweeter_card = None
         self.pressed_bird = None
+        
+        # Rage Popup Logic
+        self.popup_timer = None 
+        self.popup_container = None
+        self.popup_ack_button = None
 
     def setup(self, **kwargs):
         try:
@@ -154,7 +161,54 @@ class FieldScreen(Screen):
         
              def on_tweeter_close():
                  self.tweeter_card = None
-                 # Re-enable Bird Info Card
+                 is_crashout = GlobalState.get_instance().is_crashout
+                 print(f"DEBUG: Tweeter Closed. is_crashout={is_crashout}")
+                 
+                 # Check if we were in Rage Mode
+                 if is_crashout:
+                     # Trigger Popup IMMEDIATELY
+                     print("DEBUG: Creating Rage Popup")
+                     # Use InfoCard image size
+                     try:
+                         # Load Image
+                         card_img = pygame.image.load("assets/images/infocard.png")
+                         panel_w, panel_h = card_img.get_size()
+                     except Exception as e:
+                         print(f"DEBUG: Failed to load popup image: {e}")
+                         panel_w, panel_h = 390, 315
+                         card_img = None
+                     
+                     rect = pygame.Rect(0, 0, panel_w, panel_h)
+                     rect.center = (self.window_size[0]//2, self.window_size[1]//2)
+                     
+                     # Transparent Container
+                     self.popup_container = UIPanel(
+                         relative_rect=rect,
+                         manager=self.manager,
+                         starting_height=2, # On top of everything
+                         object_id='#bird_info_card' # Re-use transparent style
+                     )
+                     
+                     if card_img:
+                         UIImage(relative_rect=pygame.Rect((0,0), (panel_w, panel_h)),
+                                 image_surface=card_img,
+                                 manager=self.manager,
+                                 container=self.popup_container)
+                             
+                     self.popup_ack_button = UIButton(
+                         relative_rect=pygame.Rect(0, -60, 120, 40), # Position near bottom
+                         text='',
+                         manager=self.manager,
+                         container=self.popup_container,
+                         object_id='#popup_exit_button',
+                         anchors={'centerx': 'centerx', 'bottom': 'bottom'}
+                     )
+                 
+                 # Re-enable Bird Info Card regardless?
+                 if self.active_card:
+                      self.active_card.enable()
+                 
+                 # Re-enable Bird Info Card regardless?
                  if self.active_card:
                       self.active_card.enable()
             
@@ -171,13 +225,26 @@ class FieldScreen(Screen):
          self.pressed_bird = None 
 
     def process_event(self, event):
-        # 1. UI Buttons (Navigation) - Always allow? 
-        # Actually user might want to navigate away.
+        # Handle Popup Interaction (Acknowledge)
+        if self.popup_container:
+            if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                if event.ui_element == self.popup_ack_button:
+                    # Reset Rage
+                    GlobalState.get_instance().reset_rage()
+                    
+                    # Close Popup
+                    self.popup_container.kill()
+                    self.popup_container = None
+                    self.popup_ack_button = None
+                    return # Handled
+
+        # 1. UI Buttons (Navigation) - DISABLE if Popup Active
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            if event.ui_element == self.camera_button:
-                self.screen_manager.switch_to('camera')
-            elif event.ui_element == self.birdchive_button:
-                self.screen_manager.switch_to('birdchive')
+            if not self.popup_container: # Only allow if no popup
+                if event.ui_element == self.camera_button:
+                    self.screen_manager.switch_to('camera')
+                elif event.ui_element == self.birdchive_button:
+                    self.screen_manager.switch_to('birdchive')
         
         # 2. Block field interactions if a card is active
         # Only block if Tweeter is open (fullscreen overlay)
@@ -230,6 +297,14 @@ class FieldScreen(Screen):
             # Handle MOUSEBUTTONDOWN for press (capture bird)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
+                
+                # Check if click is on UI (specifically popup) to avoid clicking bird THROUGH popup
+                # Although pygame_gui usually consumes the event?
+                # If we are here, pygame_gui.ProcessEvents might have already handled it. 
+                # But we should be careful.
+                if self.manager.get_hovering_any_element():
+                    return
+
                 world_mouse_pos = (mouse_pos[0] + self.scroll_x, mouse_pos[1])
                 
                 # Iterate reversed (top-most first)
@@ -298,6 +373,10 @@ class FieldScreen(Screen):
         if self.tweeter_card:
             self.tweeter_card.kill()
             self.tweeter_card = None
+            
+        if self.popup_container:
+            self.popup_container.kill()
+            self.popup_container = None
             
         if self.camera_button:
             self.camera_button.kill()

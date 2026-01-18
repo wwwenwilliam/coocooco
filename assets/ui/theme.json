@@ -310,5 +310,23 @@
             "shape": "rounded_rectangle",
             "shape_corner_radius": "5"
         }
+    },
+    "#popup_exit_button": {
+        "colours": {
+            "normal_bg": "#ffffff00",
+            "hovered_bg": "#ffffff00"
+        },
+        "images": {
+            "normal_image": {
+                "path": "assets/ui/exit_button_normal.png"
+            },
+            "hovered_image": {
+                "path": "assets/ui/exit_button_hovered.png"
+            }
+        },
+        "misc": {
+            "border_width": "0",
+            "shadow_width": "0"
+        }
     }
 }
