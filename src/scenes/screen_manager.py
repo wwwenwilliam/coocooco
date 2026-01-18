@@ -9,6 +9,7 @@ class ScreenManager:
         self.manager = manager
         self.window_size = window_size
         self.current_screen = None
+        self.current_screen_name = None
         self.screens = {}
         
         # Initialize all screens
@@ -20,6 +21,7 @@ class ScreenManager:
     def switch_to(self, screen_name, **kwargs):
         """Switches to the screen with the given name."""
         if screen_name in self.screens:
+            self.current_screen_name = screen_name
             self.set_screen(self.screens[screen_name], **kwargs)
         else:
             print(f"Screen '{screen_name}' not found.")
