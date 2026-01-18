@@ -69,16 +69,20 @@ class BirdchiveScreen(Screen):
             
             # 2. Image
             img_h = 160
-            img_rect = pygame.Rect((10, 10), (tile_size[0]-20, img_h))
+            # Center horizontally with anchors
+            # rect.x=0 acts as offset from center when anchored
+            img_rect = pygame.Rect((0, 10), (tile_size[0]-30, img_h))
             image_path = bird.get('cropped_path') or bird.get('image_path')
             
             # Check if image exists/loadable
             try:
                 loaded_image = pygame.image.load(image_path)
                 loaded_image = pygame.transform.scale(loaded_image, (img_rect.width, img_rect.height))
-                UIImage(relative_rect=img_rect, image_surface=loaded_image, manager=self.manager, container=panel)
+                UIImage(relative_rect=img_rect, image_surface=loaded_image, manager=self.manager, container=panel,
+                        anchors={'centerx': 'centerx', 'top': 'top'})
             except:
-                UILabel(relative_rect=img_rect, text="No Image", manager=self.manager, container=panel)
+                UILabel(relative_rect=img_rect, text="No Image", manager=self.manager, container=panel,
+                        anchors={'centerx': 'centerx', 'top': 'top'})
 
             # 3. Label (Name/Species)
             name = bird.get('name')
@@ -86,17 +90,20 @@ class BirdchiveScreen(Screen):
             date_str = bird.get('timestamp', 'Unknown').split('T')[0]
             
             label_text = name if name else species
-            UILabel(relative_rect=pygame.Rect((10, img_h + 15), (tile_size[0]-20, 25)), 
+            
+            UILabel(relative_rect=pygame.Rect((0, img_h + 15), (tile_size[0]-20, 25)), 
                     text=label_text, 
                     manager=self.manager, 
                     container=panel,
-                    object_id='#tile_label_main')
+                    object_id='#tile_label_main',
+                    anchors={'centerx': 'centerx', 'top': 'top'})
             
-            UILabel(relative_rect=pygame.Rect((10, img_h + 40), (tile_size[0]-20, 20)), 
+            UILabel(relative_rect=pygame.Rect((0, img_h + 40), (tile_size[0]-20, 20)), 
                     text=date_str, 
                     manager=self.manager, 
                     container=panel,
-                    object_id='#tile_label_sub')
+                    object_id='#tile_label_sub',
+                    anchors={'centerx': 'centerx', 'top': 'top'})
 
             # 4. Invisible Button for Click
             btn = UIButton(
