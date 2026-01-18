@@ -184,7 +184,9 @@ class Bird(pygame.sprite.Sprite):
         # Constrain target Y to same ground level
         y = self.ground_y - self.height
         self.target = pygame.Vector2(target_x, y)
-        self.state = MOVING
+        # Only switch to MOVING if not in an event
+        if self.state not in [EVENT_HAPPY, EVENT_SAD, EVENT_ANGRY]:
+            self.state = MOVING
         
         # Switch animation based on ACTUAL movement direction (after clamping)
         if self.using_sprite and self.anim_left and self.anim_right:
@@ -212,7 +214,7 @@ class Bird(pygame.sprite.Sprite):
             
         # Custom sprite setup
         if self.using_sprite:
-            if self.state == MOVING:
+            if self.state == MOVING or self.state in [EVENT_HAPPY, EVENT_SAD, EVENT_ANGRY]:
                 try:
                     self.image = next(self.anim_iter)
                     # Update dimensions to match the current sprite frame
@@ -255,7 +257,7 @@ class Bird(pygame.sprite.Sprite):
             # Low chance to trigger event if IDLE
             # Higher chance to trigger event (approx 4x more common)
             # Higher chance to trigger event (approx 4x more common)
-            if random.random() < 0.0001: 
+            if random.random() < 0.001: 
                 self.trigger_random_event()
                 
             self.idle_timer -= dt
@@ -265,6 +267,7 @@ class Bird(pygame.sprite.Sprite):
         elif self.state in [EVENT_HAPPY, EVENT_SAD, EVENT_ANGRY]:
              # Check Timeout
              self.event_timer -= dt
+             # print(f"DEBUG: Bird Event Timer: {self.event_timer:.2f}")
              if self.event_timer <= 0:
                  self.end_event()
                  return
@@ -294,7 +297,7 @@ class Bird(pygame.sprite.Sprite):
         event = get_random_event()
         self.current_event = event
         self.state = event['state']
-        self.event_timer = 5.0 # 15 seconds duration
+        self.event_timer = 4.0 # 4 seconds duration
         
         # Setup overlay
         evt_type = event['type']
