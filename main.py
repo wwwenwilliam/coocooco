@@ -18,7 +18,7 @@ pygame.camera.init()
 
 # Background Music
 try:
-    pygame.mixer.music.load("assets/audio/main_theme.mp3")
+    pygame.mixer.music.load("assets/audio/main_theme_updated.mp3")
     pygame.mixer.music.set_volume(0.5)
     pygame.mixer.music.play(-1)  # -1 means loop forever
 except Exception as e:
