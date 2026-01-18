@@ -329,8 +329,7 @@ class Bird(pygame.sprite.Sprite):
                  direction.normalize_ip()
                  self.position += direction * (self.speed * 0.5) # Slower
                  
-                 # Facing direction
-                 # Facing direction
+                 # Update facing direction
                  if direction.x > 0: self.facing_right = True
                  elif direction.x < 0: self.facing_right = False
         
@@ -338,9 +337,7 @@ class Bird(pygame.sprite.Sprite):
         self.rect.topleft = (int(self.position.x), int(self.position.y))
         
         if self.overlay_image:
-             # Center overlay??? or just draw at top-left?
-             # Current draw logic just blits overlay at screen_pos.
-             pass
+             pass  # Overlay is drawn in draw() method
 
     def trigger_random_event(self):
         event = get_random_event()

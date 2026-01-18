@@ -264,9 +264,7 @@ class FieldScreen(Screen):
         if self.tweeter_card or self.rage_delay_active:
              return
 
-        # Keyboard Scrolling
-        if self.popup_container:
-            pass # Allow scrolling but maybe block keys if desired? User said "scroll actually". assuming keys+drag.
+        # Keyboard Scrolling (allowed during popup)
             
         if event.type == pygame.KEYDOWN:
              scroll_speed = 10
@@ -474,7 +472,6 @@ class FieldScreen(Screen):
                 pass
                 
             # Resize Foreground
-            # Resize Foreground
             if self.foreground:
                  try:
                     original_fg = pygame.image.load("assets/images/foreground.png")
@@ -490,7 +487,6 @@ class FieldScreen(Screen):
                     pass
 
         # 2. Update Scroll Limit
-        # World width is fixed by background usually, but if dynamic:
         if self.background:
              world_width = self.background.get_width()
         else:
