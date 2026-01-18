@@ -2,10 +2,15 @@ import pygame
 import random
 import os
 from .spritesheetanim import SpriteStripAnim
+from src.data.events import get_random_event, EVENT_HAPPY, EVENT_SAD, EVENT_ANGRY
 
 # States
 IDLE = 0
 MOVING = 1
+# Event States (imported constants would be better but defining here for simplicity/access)
+EVENT_HAPPY = 2
+EVENT_SAD = 3
+EVENT_ANGRY = 4
 
 class Bird(pygame.sprite.Sprite):
     def __init__(self, pos, bounds_rect, bird_data=None):
@@ -39,6 +44,8 @@ class Bird(pygame.sprite.Sprite):
         self.state = IDLE
         self.idle_timer = 0
         self.is_paused = False
+        self.current_event = None
+        self.event_timer = 0
         self.pick_new_target()
 
     def load_sprites(self):
@@ -65,7 +72,11 @@ class Bird(pygame.sprite.Sprite):
         self.anim_left = None
         self.anim_iter = None
         self.image_idle_right = None
+        self.image_idle_right = None
         self.image_idle_left = None
+        self.overlay_anims = {}
+        self.overlay_anim_iter = None
+        self.overlay_image = None
         
         # Load Moving Sprites
         if os.path.exists(sprite_path_right):
@@ -142,6 +153,19 @@ class Bird(pygame.sprite.Sprite):
              # Use first frame as idle if no dedicated idle
              pass
 
+        # Load Overlay Sprites
+        self.overlay_anims = {}
+        overlay_map = {'happy': 'happy.png', 'sad': 'sad.png', 'angry': 'mad.png'}
+        for evt, filename in overlay_map.items():
+            path = os.path.join("assets", "sprites", filename)
+            if os.path.exists(path):
+                try:
+                    surf = pygame.image.load(path)
+                    w, h = surf.get_size()
+                    # Assuming 2 frames like walk
+                    self.overlay_anims[evt] = SpriteStripAnim(path, (0, 0, w//2, h), 2, None, True, 8)
+                except: pass
+
     def pick_new_target(self):
         """Pick a random target within bounds, but with short hops."""
         # Short hop distance
@@ -205,6 +229,14 @@ class Bird(pygame.sprite.Sprite):
                      self.image = idle_img
                      self.width = self.image.get_width()
                      self.height = self.image.get_height()
+                     
+        # Update Overlay Animation
+        if self.overlay_anim_iter:
+            try:
+                self.overlay_image = next(self.overlay_anim_iter)
+            except: pass
+        else:
+            self.overlay_image = None
 
         if self.state == MOVING and self.target:
             direction = self.target - self.position
@@ -220,12 +252,70 @@ class Bird(pygame.sprite.Sprite):
                 self.position += direction * self.speed
                 
         elif self.state == IDLE:
+            # Low chance to trigger event if IDLE
+            # Higher chance to trigger event (approx 4x more common)
+            # Higher chance to trigger event (approx 4x more common)
+            if random.random() < 0.0001: 
+                self.trigger_random_event()
+                
             self.idle_timer -= dt
             if self.idle_timer <= 0:
                 self.pick_new_target()
+                
+        elif self.state in [EVENT_HAPPY, EVENT_SAD, EVENT_ANGRY]:
+             # Check Timeout
+             self.event_timer -= dt
+             if self.event_timer <= 0:
+                 self.end_event()
+                 return
+
+             # In event state, keep moving but slower
+             if not self.target:
+                 self.pick_new_target()
+             
+             direction = self.target - self.position
+             dist = direction.length()
+             
+             if dist < 5:
+                 self.pick_new_target() # Keep moving
+             else:
+                 direction.normalize_ip()
+                 self.position += direction * (self.speed * 0.5) # Slower
+                 
+                 # Facing direction
+                 # Facing direction
+                 if direction.x > 0: self.facing_right = True
+                 elif direction.x < 0: self.facing_right = False
         
         # Update rect for collision detection (in world space)
         self.rect.topleft = (int(self.position.x), int(self.position.y))
+
+    def trigger_random_event(self):
+        event = get_random_event()
+        self.current_event = event
+        self.state = event['state']
+        self.event_timer = 5.0 # 15 seconds duration
+        
+        # Setup overlay
+        evt_type = event['type']
+        if evt_type in self.overlay_anims:
+            self.overlay_anim_iter = iter(self.overlay_anims[evt_type])
+            try:
+                self.overlay_image = next(self.overlay_anim_iter)
+            except: pass
+        else:
+             self.overlay_anim_iter = None
+             self.overlay_image = None
+             
+        # print(f"Bird entered event: {event['type']}")
+
+    def end_event(self):
+        """End the current event and return to normal behavior."""
+        self.state = 0 # IDLE
+        self.current_event = None
+        self.overlay_image = None
+        self.overlay_anim_iter = None
+        self.pick_new_target()
 
     def update_bounds(self, new_bounds_rect):
         """Update bounds and reposition bird proportionally (size stays fixed)."""
@@ -263,6 +353,9 @@ class Bird(pygame.sprite.Sprite):
         # Render Transform: World -> Screen
         screen_pos = (self.rect.x - scroll_x, self.rect.y)
         surface.blit(self.image, screen_pos)
+        
+        if self.overlay_image:
+            surface.blit(self.overlay_image, screen_pos)
 
     def handle_event(self, event, scroll_x):
         if event.type == pygame.MOUSEBUTTONDOWN:

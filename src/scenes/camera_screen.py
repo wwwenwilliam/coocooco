@@ -3,7 +3,7 @@ import pygame_gui
 import pygame.camera
 
 from src.scenes.screen import Screen
-from src.image_tools.processor import process_image
+from src.ai.image_processor import process_image
 
 class CameraScreen(Screen):
     def __init__(self, screen_manager, manager, window_size):

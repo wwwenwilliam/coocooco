@@ -2,7 +2,6 @@
 from src.scenes.camera_screen import CameraScreen
 from src.scenes.birdchive_screen import BirdchiveScreen
 from src.scenes.field_screen import FieldScreen
-from src.scenes.randomevent_screen import RandomEventScreen
 
 class ScreenManager:
     def __init__(self, manager, window_size):
@@ -16,7 +15,6 @@ class ScreenManager:
         self.screens['camera'] = CameraScreen(self, manager, window_size)
         self.screens['birdchive'] = BirdchiveScreen(self, manager, window_size)
         self.screens['field'] = FieldScreen(self, manager, window_size)
-        self.screens['random_event'] = RandomEventScreen(self, manager, window_size)
 
     def switch_to(self, screen_name, **kwargs):
         """Switches to the screen with the given name."""

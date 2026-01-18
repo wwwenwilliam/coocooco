@@ -4,6 +4,7 @@ import pygame_gui
 import random
 from src.entities.bird import Bird
 from src.data.storage import load_birds, get_birds_by_status
+from src.data.events import EVENT_HAPPY, EVENT_SAD, EVENT_ANGRY
 from src.ui.bird_info_card import BirdInfoCard
 from src.ui.tweeter_card import TweeterCard
 
@@ -78,6 +79,22 @@ class FieldScreen(Screen):
          """Opens the info card for the given bird sprite."""
          # Pause THIS bird
          bird.is_paused = True
+
+         # Check Event State
+         if bird.current_event:
+             margin = 50
+             width = self.window_size[0] - (margin * 2)
+             height = self.window_size[1] - (margin * 2)
+             rect = pygame.Rect(0, 0, width, height)
+             rect.center = (self.window_size[0]//2, self.window_size[1]//2)
+             
+             def on_event_close():
+                 self.tweeter_card = None
+                 bird.is_paused = False
+                 bird.end_event()
+             
+             self.tweeter_card = TweeterCard(rect, self.manager, bird.bird_data, on_close_callback=on_event_close, event_data=bird.current_event)
+             return
     
          # Smart Positioning (World Based)
          card_w, card_h = 330, 300

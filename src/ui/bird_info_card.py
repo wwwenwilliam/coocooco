@@ -42,6 +42,15 @@ class BirdInfoCard(UIWindow):
         else:
             self.switch_to_edit_mode()
 
+        # Personality Label
+        personality = self.bird_data.get('personality', 'Unknown')
+        self.personality_label = UILabel(
+            relative_rect=pygame.Rect((220, 60), (150, 30)), # Wider for text
+            text=f"Trait: {personality}",
+            manager=manager,
+            container=self
+        )
+
         # Archive Button
         self.archive_btn = UIButton(
             relative_rect=pygame.Rect((220, 170), (100, 30)),

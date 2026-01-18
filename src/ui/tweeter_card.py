@@ -4,17 +4,23 @@ import random
 from pygame_gui.elements import UIWindow, UIButton, UITextBox, UITextEntryLine
 from src.api.backboard_client import BackboardClient, USE_BACKBOARD_API
 from src.data.storage import update_bird_data
+from src.ai.sentiment import analyze_text
 
 class TweeterCard(UIWindow):
-    def __init__(self, rect, manager, bird_data=None, on_close_callback=None):
+    def __init__(self, rect, manager, bird_data=None, on_close_callback=None, event_data=None):
         species = bird_data.get('species', 'Bird') if bird_data else 'Bird'
-        super().__init__(rect, manager, f"Chat with {species}", draggable=False)
+        title = f"Chat with {species}"
+        if event_data:
+            title = f"{species} is feeling {event_data['type']}!"
+            
+        super().__init__(rect, manager, title, draggable=False)
         self.bird_data = bird_data
         self.on_close_callback = on_close_callback
         self.species = species
+        self.event_data = event_data
         
         # Initialize backboard client
-        self.backboard = BackboardClient(bird_data) if bird_data else None
+        self.backboard = BackboardClient(bird_data, event_data) if bird_data else None
         
         # Async response handling
         self.waiting_for_response = False
@@ -23,12 +29,16 @@ class TweeterCard(UIWindow):
         # Chat history (list of tuples: (sender, message))
         self.chat_history = []
         
-        # Load previous personality or generate greeting
-        personality = bird_data.get('personality', '') if bird_data else ''
-        if personality:
-            self.chat_history.append(("bird", f"*chirp* Welcome back! I remember you!"))
+        if event_data:
+             # Event specific greeting
+             self.chat_history.append(("bird", event_data['initial_message']))
         else:
-            self.chat_history.append(("bird", f"*chirp* Hello! I'm a {species}. What would you like to talk about?"))
+             # Load previous personality or generate greeting
+             personality = bird_data.get('personality', '') if bird_data else ''
+             if personality:
+                 self.chat_history.append(("bird", f"*chirp* Welcome back! I remember you!"))
+             else:
+                 self.chat_history.append(("bird", f"*chirp* Hello! I'm a {species}. What would you like to talk about?"))
 
         # Chat Display Area
         self.chat_display = UITextBox(
@@ -144,12 +154,6 @@ class TweeterCard(UIWindow):
             backboard_ids = self.backboard.get_ids_for_storage()
             updates.update(backboard_ids)
         
-        # Extract personality hints from chat (simple version: save last few bird responses)
-        bird_responses = [msg for sender, msg in self.chat_history if sender == "bird"]
-        if len(bird_responses) > 1:
-            # Save a personality summary based on conversation themes
-            updates['personality'] = f"Has chatted {len(bird_responses)} times with user."
-        
         if updates:
             update_bird_data(self.bird_data['id'], updates)
 
@@ -168,6 +172,46 @@ class TweeterCard(UIWindow):
                 
     def on_close_window_button_pressed(self):
         self._save_chat_data()
+        
+        # Trigger sentiment analysis
+        if self.event_data and self.bird_data:
+             self.analyze_conversation_and_update_trait()
+             
         super().on_close_window_button_pressed()
         if self.on_close_callback:
             self.on_close_callback()
+
+    def analyze_conversation_and_update_trait(self):
+        # Collect user messages
+        user_text = " ".join([msg for sender, msg in self.chat_history if sender == "user"])
+        if not user_text: return
+        
+        print(f"Analyzing sentiment for: {user_text[:50]}...")
+        label = 'NEUTRAL'
+        score = 0.0
+        
+        try:
+            result = analyze_text(user_text)
+            label = result['label']
+            score = result['score']
+        except: pass
+        
+        print(f"Sentiment: {label} ({score:.2f})")
+        
+        # Simple trait assignment logic
+        new_trait = ""
+        # High confidence threshold
+        if score > 0.7:
+             if label == 'POSITIVE':
+                 if score > 0.9: new_trait = "Passionate"
+                 else: new_trait = "Friendly"
+             elif label == 'NEGATIVE':
+                 if score > 0.9: new_trait = "Grumpy"
+                 else: new_trait = "Cautious"
+        else:
+             print(f"Sentiment confidence too low ({score:.2f}) - No trait assigned.")
+             
+        if new_trait:
+            print(f"Assigning new personality trait: {new_trait}")
+            self.bird_data['personality'] = new_trait
+            update_bird_data(self.bird_data['id'], self.bird_data)

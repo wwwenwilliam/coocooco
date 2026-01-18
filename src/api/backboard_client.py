@@ -29,8 +29,9 @@ HEADERS = {"X-API-Key": API_KEY} if API_KEY else {}
 class BackboardClient:
     """Client for interacting with backboard.io API."""
     
-    def __init__(self, bird_data):
+    def __init__(self, bird_data, event_data=None):
         self.bird_data = bird_data
+        self.event_data = event_data
         self.assistant_id = bird_data.get('backboard_assistant_id')
         self.thread_id = bird_data.get('backboard_thread_id')
         self.species = bird_data.get('species', 'Bird')
@@ -43,6 +44,9 @@ class BackboardClient:
         prompt = f"You are a {species}. Use short chirpy sentences with occasional bird sounds (*chirp*, *tweet*). Max 1-2 sentences."
         if personality:
             prompt += f" {personality}"
+            
+        if self.event_data:
+            prompt += f" {self.event_data['prompt']}"
             
         return prompt
     
@@ -87,7 +91,19 @@ class BackboardClient:
                 else:
                     print(f"Failed to create thread: {response.text}")
                     return False
-                    
+             
+            
+            # If we have event data and an assistant exists, force update the prompt
+            if self.event_data and self.assistant_id:
+                try:
+                    requests.patch(
+                        f"{BASE_URL}/assistants/{self.assistant_id}",
+                        json={"system_prompt": self._build_system_prompt()},
+                        headers=HEADERS
+                    )
+                except:
+                    print("Failed to update assistant prompt for event.")
+
             return True
             
         except requests.RequestException as e:
