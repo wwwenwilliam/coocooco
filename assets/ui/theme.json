@@ -82,8 +82,18 @@
     "#capture_button": {
         "colours": {
             "normal_bg": "#ff0099",
-            "hovered_bg": "#ff33bb",
-            "active_bg": "#cc0077"
+            "hovered_bg": "#ff33bb"
+        },
+        "images": {
+            "normal_image": {
+                "path": "assets/images/capture_button_normal.png"
+            },
+            "hovered_image": {
+                "path": "assets/images/capture_button_hovered.png"
+            }
+        },
+        "misc": {
+            "border_width": "0"
         }
     },
     "window": {

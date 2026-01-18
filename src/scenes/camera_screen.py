@@ -47,7 +47,7 @@ class CameraScreen(Screen):
 
         self.capture_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((x_pos, y_pos), (btn_width, btn_height)),
-            text='Capture',
+            text='',
             manager=self.manager,
             object_id='#capture_button'
         )
