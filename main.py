@@ -1,6 +1,9 @@
 import pygame
 import pygame_gui
 
+from src.scenes.screen_manager import ScreenManager
+from src.audio.audio_manager import AudioManager
+
 # CONFIGURATION
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 844
@@ -39,9 +42,9 @@ pygame.display.update()
 
 # 3. Heavy Imports (Now that window is visible)
 # This import chain triggers torch/transformers loading
-from src.scenes.screen_manager import ScreenManager
 
 manager = pygame_gui.UIManager((WINDOW_WIDTH, WINDOW_HEIGHT), 'assets/ui/theme.json')
+audio_manager = AudioManager()
 clock = pygame.time.Clock()
 
 # Create Screen Manager
@@ -81,6 +84,7 @@ while running:
     ## update
     manager.update(time_delta)
     screen_manager.update(time_delta)
+    audio_manager.update(time_delta, screen_manager.current_screen_name)
 
     ## draw
     screen.fill((255, 255, 255))
