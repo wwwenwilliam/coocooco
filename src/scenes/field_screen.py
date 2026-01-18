@@ -38,16 +38,20 @@ class FieldScreen(Screen):
             new_width = int(new_height * aspect_ratio)
             self.background = pygame.transform.scale(self.background, (new_width, new_height))
             
-            # Load Foreground
-            try:
-                self.foreground = pygame.image.load("assets/images/foreground.png")
-                self.foreground = pygame.transform.scale(self.foreground, (new_width, new_height))
-            except pygame.error:
-                print("Could not load foreground image")
-
             # Calculate max scrolling distance
             world_width = new_width
             self.max_scroll = max(0, new_width - self.window_size[0])
+
+            # Load Foreground with Parallax Scaling (Factor 0.8)
+            try:
+                self.foreground = pygame.image.load("assets/images/foreground.png")
+                
+                # Foreground needs to cover window_width + (max_scroll * 0.8)
+                fg_target_width = int(self.window_size[0] + (self.max_scroll * 0.8))
+                
+                self.foreground = pygame.transform.scale(self.foreground, (fg_target_width, new_height))
+            except pygame.error:
+                print("Could not load foreground image")
             
             # Spawn Birds
             self.refresh_birds()
@@ -281,7 +285,7 @@ class FieldScreen(Screen):
             bird.draw(surface, self.scroll_x)
 
         if self.foreground:
-            surface.blit(self.foreground, (-self.scroll_x, 0))
+            surface.blit(self.foreground, (-self.scroll_x * 0.8, 0))
             
 
     def cleanup(self):
@@ -353,12 +357,18 @@ class FieldScreen(Screen):
                 pass
                 
             # Resize Foreground
+            # Resize Foreground
             if self.foreground:
                  try:
                     original_fg = pygame.image.load("assets/images/foreground.png")
-                    # Use same dimensions as background
-                    fg_w, fg_h = self.background.get_size()
-                    self.foreground = pygame.transform.scale(original_fg, (fg_w, fg_h))
+                    
+                    # Recalculate max scroll for new size
+                    world_w = self.background.get_width()
+                    max_scr = max(0, world_w - self.window_size[0])
+                    
+                    # Parallax Width
+                    fg_w = int(self.window_size[0] + (max_scr * 0.8))
+                    self.foreground = pygame.transform.scale(original_fg, (fg_w, new_h))
                  except:
                     pass
 
