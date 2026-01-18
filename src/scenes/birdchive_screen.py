@@ -13,8 +13,26 @@ class BirdchiveScreen(Screen):
         self.bird_buttons = {} # Map button -> bird_data
         self.grid_items = []
         self.active_card = None
+        self.background = None
+        self.logo_image = None
 
     def setup(self, **kwargs):
+        try:
+            self.background = pygame.image.load("assets/images/birdchive_background.png")
+            # Scale to match window height while maintaining aspect ratio
+            original_width, original_height = self.background.get_size()
+            aspect_ratio = original_width / original_height
+            new_height = self.window_size[1]
+            new_width = int(new_height * aspect_ratio)
+            self.background = pygame.transform.scale(self.background, (new_width, new_height))
+        except pygame.error as e:
+            print(f"Could not load birdchive background image: {e}")
+        
+        try:
+            self.logo_image = pygame.image.load("assets/images/the_roost_logo.png")
+        except pygame.error as e:
+            print(f"Could not load logo image: {e}")
+        
         self.back_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((20, 20), (120, 80)),
             text='',
@@ -155,11 +173,19 @@ class BirdchiveScreen(Screen):
         pass
 
     def draw(self, surface):
-        surface.fill((240, 240, 255))
-        font = pygame.font.Font(None, 48)
-        text = font.render("Bird Archive", True, (0, 0, 0))
-        text_rect = text.get_rect(center=(self.window_size[0]//2, 60))
-        surface.blit(text, text_rect)
+        if self.background:
+            surface.blit(self.background, (0, 0))
+        else:
+            surface.fill((240, 240, 255))
+        
+        if self.logo_image:
+            logo_rect = self.logo_image.get_rect(center=(self.window_size[0]//2, 60))
+            surface.blit(self.logo_image, logo_rect)
+        else:
+            font = pygame.font.Font(None, 48)
+            text = font.render("The Roost", True, (0, 0, 0))
+            text_rect = text.get_rect(center=(self.window_size[0]//2, 60))
+            surface.blit(text, text_rect)
 
     def cleanup(self):
         if self.back_button:
@@ -172,6 +198,18 @@ class BirdchiveScreen(Screen):
 
     def resize(self, new_size):
         self.window_size = new_size
+        
+        # Rescale background while maintaining aspect ratio
+        if self.background:
+            try:
+                bg_original = pygame.image.load("assets/images/birdchive_background.png")
+                original_width, original_height = bg_original.get_size()
+                aspect_ratio = original_width / original_height
+                new_height = self.window_size[1]
+                new_width = int(new_height * aspect_ratio)
+                self.background = pygame.transform.scale(bg_original, (new_width, new_height))
+            except pygame.error as e:
+                print(f"Could not rescale background: {e}")
         
         if self.back_button:
             self.back_button.set_relative_position((20, 20))
