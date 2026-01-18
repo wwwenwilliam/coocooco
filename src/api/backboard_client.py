@@ -63,11 +63,11 @@ class BackboardClient:
                     json={
                         "name": f"{self.species} Chat",
                         "system_prompt": self._build_system_prompt(),
-                        "llm_provider": "google",
-                        "llm_model_name": "gemini-1.5-flash", 
+                        "llm_provider": "openai",
+                        "llm_model_name": "gpt-5-chat-latest", 
                         "embedding_provider": "openai",
-                        "embedding_model_name": "text-embedding-3-small",
-                        "memory": "off"
+                        "embedding_model_name": "text-embedding-3-large",
+                        "memory": "Auto"
                     },
                     headers=HEADERS,
                     timeout=10
