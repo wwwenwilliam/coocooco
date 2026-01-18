@@ -33,11 +33,31 @@ if FULLSCREEN:
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), flags)
 
 # 2. Show Splash Screen
-screen.fill((255, 255, 255))
-font = pygame.font.Font(None, 48)
-text = font.render("Loading...", True, (0, 0, 0))
-text_rect = text.get_rect(center=(WINDOW_WIDTH//2, WINDOW_HEIGHT//2))
-screen.blit(text, text_rect)
+# 2. Show Splash Screen
+try:
+    loading_image = pygame.image.load("assets/images/loading_screen.png")
+    
+    # Scale to fill screen (Aspect Fill / Cover)
+    img_rect = loading_image.get_rect()
+    scale = max(WINDOW_WIDTH / img_rect.width, WINDOW_HEIGHT / img_rect.height)
+    new_w = int(img_rect.width * scale)
+    new_h = int(img_rect.height * scale)
+    
+    loading_image = pygame.transform.scale(loading_image, (new_w, new_h))
+    
+    # Center and Blit
+    x = (WINDOW_WIDTH - new_w) // 2
+    y = (WINDOW_HEIGHT - new_h) // 2
+    screen.blit(loading_image, (x, y))
+
+except Exception as e:
+    print(f"Could not load loading screen: {e}")
+    screen.fill((255, 255, 255))
+    font = pygame.font.Font(None, 48)
+    text = font.render("Loading...", True, (0, 0, 0))
+    text_rect = text.get_rect(center=(WINDOW_WIDTH//2, WINDOW_HEIGHT//2))
+    screen.blit(text, text_rect)
+
 pygame.display.update()
 
 # 3. Heavy Imports (Now that window is visible)
