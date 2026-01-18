@@ -301,9 +301,7 @@ class Bird(pygame.sprite.Sprite):
             self.position.y = self.ground_y - self.height
             
             # Low chance to trigger event if IDLE
-            # Higher chance to trigger event (approx 4x more common)
-            # Higher chance to trigger event (approx 4x more common)
-            if random.random() < 0.001: 
+            if random.random() < 0.005: 
                 self.trigger_random_event()
                 
             self.idle_timer -= dt

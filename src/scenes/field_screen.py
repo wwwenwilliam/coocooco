@@ -182,9 +182,9 @@ class FieldScreen(Screen):
                      
                      # Start rage delay - disable interactions and wait before popup
                      self.rage_delay_active = True
-                     self.rage_delay_timer = 3.0  # 3 seconds to watch chaos
+                     self.rage_delay_timer = 7.0  # 7 seconds to watch chaos
                      self._start_rage_music()  # Start evil theme
-                     print("DEBUG: Rage delay started - watching birds rage for 3 seconds...")
+                     print("DEBUG: Rage delay started - watching birds rage for 7 seconds...")
                      return  # Don't re-enable info card
                  
                  # if NOT crashout, re-enable the info card
