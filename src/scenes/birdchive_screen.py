@@ -13,7 +13,7 @@ class BirdchiveScreen(Screen):
 
     def setup(self, **kwargs):
         self.back_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((10, 10), (100, 40)),
+            relative_rect=pygame.Rect((20, 20), (120, 80)),
             text='Back',
             manager=self.manager,
             object_id='#back_button'
@@ -42,7 +42,7 @@ class BirdchiveScreen(Screen):
             item_list.append(label)
             
         self.bird_list = pygame_gui.elements.UISelectionList(
-            relative_rect=pygame.Rect((20, 60), (self.window_size[0] - 40, self.window_size[1] - 80)),
+            relative_rect=pygame.Rect((20, 120), (self.window_size[0] - 40, self.window_size[1] - 140)),
             item_list=item_list,
             manager=self.manager,
             object_id='#birdchive_list'

@@ -5,7 +5,7 @@ from src.data.storage import update_bird_status, save_all_birds, load_birds
 
 class BirdInfoCard(UIWindow):
     def __init__(self, rect, manager, bird_data, on_close_callback=None, on_tweeter_callback=None):
-        super().__init__(rect, manager, "Bird Check")
+        super().__init__(rect, manager, "Bird Info", object_id='#bird_info_card')
         self.bird_data = bird_data
         self.on_close_callback = on_close_callback
         self.on_tweeter_callback = on_tweeter_callback
@@ -47,7 +47,8 @@ class BirdInfoCard(UIWindow):
             relative_rect=pygame.Rect((220, 170), (100, 30)),
             text='Archive',
             manager=manager,
-            container=self
+            container=self,
+            object_id='#archive_button'
         )
 
         # Tweeter Button
@@ -55,21 +56,23 @@ class BirdInfoCard(UIWindow):
             relative_rect=pygame.Rect((220, 210), (100, 30)),
             text='Tweeter',
             manager=manager,
-            container=self
+            container=self,
+            object_id='#tweeter_button'
         )
 
     def switch_to_view_mode(self):
         self.clear_name_ui()
         name = self.bird_data.get('name', 'Unnamed')
-        self.name_label = UILabel(relative_rect=pygame.Rect((220, 95), (100, 30)), text=name, manager=self.ui_manager, container=self)
-        self.edit_btn = UIButton(relative_rect=pygame.Rect((220, 130), (100, 30)), text='Edit', manager=self.ui_manager, container=self)
+        self.name_label = UILabel(relative_rect=pygame.Rect((220, 95), (100, 30)), text=name, manager=self.ui_manager, container=self, object_id='#name_label')
+        self.edit_btn = UIButton(relative_rect=pygame.Rect((220, 130), (100, 30)), text='Edit', manager=self.ui_manager, container=self, object_id='#edit_button')
 
     def switch_to_edit_mode(self):
         self.clear_name_ui()
         self.name_entry = UITextEntryLine(
             relative_rect=pygame.Rect((220, 95), (100, 30)),
             manager=self.ui_manager,
-            container=self
+            container=self,
+            object_id='#name_entry'
         )
         if 'name' in self.bird_data:
             self.name_entry.set_text(self.bird_data['name'])

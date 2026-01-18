@@ -60,6 +60,9 @@
         "colours": {
             "dark_bg": "#f5f0e6",
             "normal_bg": "#faf5eb"
+        },
+        "misc": {
+            "enable_title_bar": "0"
         }
     },
     "#tweeter_card": {
@@ -102,5 +105,37 @@
         "colours": {
             "normal_text": "#333333"
         }
-    }
+    },
+    "#archive_button": {
+        "colours": {
+            "normal_bg": "#8b4513",
+            "hovered_bg": "#a0522d"
+        }
+    },
+    "#tweeter_button": {
+        "colours": {
+            "normal_bg": "#1da1f2",
+            "hovered_bg": "#4db5f5"
+        }
+    },
+    "#edit_button": {
+        "colours": {
+            "normal_bg": "#666666",
+            "hovered_bg": "#888888"
+        }
+    },
+    "#send_button": {
+        "colours": {
+            "normal_bg": "#00cc00",
+            "hovered_bg": "#33dd33"
+        }
+    },
+    "#name_label": {},
+    "#name_entry": {
+        "colours": {
+            "text_cursor": "#000000"
+        }
+    },
+    "#chat_display": {},
+    "#chat_input": {}
 }

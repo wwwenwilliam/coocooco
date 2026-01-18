@@ -31,7 +31,7 @@ class CameraScreen(Screen):
         # Create UI elements
         # Back Button (Top Left)
         self.back_btn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((10, 10), (100, 40)),
+            relative_rect=pygame.Rect((20, 20), (120, 80)),
             text='Back',
             manager=self.manager,
             object_id='#back_button'
@@ -107,7 +107,7 @@ class CameraScreen(Screen):
         
         # Reposition UI
         if self.back_btn:
-            self.back_btn.set_relative_position((10, 10))
+            self.back_btn.set_relative_position((20, 20))
             
         if self.capture_btn:
              btn_width = 120

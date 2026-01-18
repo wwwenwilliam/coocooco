@@ -28,7 +28,7 @@ class Bird(pygame.sprite.Sprite):
         # Constrain Y to "ground" (1/5 up from bottom)
         # bounds_rect is (x, y, w, h)
         world_height = self.bounds_rect[3]
-        self.ground_y = world_height * 0.8 # 1/5 up from bottom = 4/5 down
+        self.ground_y = world_height * 0.9 # 1/5 up from bottom = 4/5 down
         
         # Snap to ground immediately
         self.position.y = self.ground_y - self.height
@@ -242,7 +242,7 @@ class Bird(pygame.sprite.Sprite):
         self.bounds_rect = new_bounds_rect
         
         # Recalculate ground_y
-        self.ground_y = new_world_height * 0.8
+        self.ground_y = new_world_height * 0.9
         
         # Reposition proportionally (size stays the same)
         self.position.x = rel_x * new_world_width

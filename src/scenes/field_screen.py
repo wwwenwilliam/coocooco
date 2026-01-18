@@ -28,7 +28,7 @@ class FieldScreen(Screen):
 
     def setup(self, **kwargs):
         try:
-            self.background = pygame.image.load("assets/images/botwfield_placeholder.jpg")
+            self.background = pygame.image.load("assets/images/background.png")
             # Scale to match window height while maintaining aspect ratio
             original_width, original_height = self.background.get_size()
             aspect_ratio = original_width / original_height
@@ -56,16 +56,16 @@ class FieldScreen(Screen):
                          break
                 
             # UI
-            btn_size = (100, 50)
+            btn_size = (120, 80)
             self.camera_button = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect((self.window_size[0] - btn_size[0] - 20, self.window_size[1] - btn_size[1] - 20), btn_size),
+                relative_rect=pygame.Rect((self.window_size[0] - btn_size[0] - 20, 20), btn_size),
                 text='Camera',
                 manager=self.manager,
                 object_id='#camera_button'
             )
 
             self.birdchive_button = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect((20, self.window_size[1] - btn_size[1] - 20), btn_size),
+                relative_rect=pygame.Rect((20, 20), btn_size),
                 text='Birdchive',
                 manager=self.manager,
                 object_id='#birdchive_button'
@@ -314,7 +314,7 @@ class FieldScreen(Screen):
             # Let's just re-scale the current background? No, that degrades quality.
             # Best to reload.
             try:
-                original = pygame.image.load("assets/images/botwfield_placeholder.jpg")
+                original = pygame.image.load("assets/images/background.png")
                 o_w, o_h = original.get_size()
                 aspect = o_w / o_h
                 new_h = self.window_size[1]
@@ -354,12 +354,12 @@ class FieldScreen(Screen):
         
         # 5. Reposition Buttons
         if self.camera_button:
-            btn_size = (100, 50)
-            rect = pygame.Rect((self.window_size[0] - btn_size[0] - 20, self.window_size[1] - btn_size[1] - 20), btn_size)
+            btn_size = (120, 80)
+            rect = pygame.Rect((self.window_size[0] - btn_size[0] - 20, 20), btn_size)
             self.camera_button.set_relative_position(rect.topleft)
             
         if self.birdchive_button:
-             btn_size = (100, 50)
-             rect = pygame.Rect((20, self.window_size[1] - btn_size[1] - 20), btn_size)
+             btn_size = (120, 80)
+             rect = pygame.Rect((20, 20), btn_size)
              self.birdchive_button.set_relative_position(rect.topleft)
 
