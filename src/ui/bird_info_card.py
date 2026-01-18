@@ -1,7 +1,7 @@
 import pygame
 import pygame_gui
 from pygame_gui.elements import UIWindow, UIButton, UILabel, UIImage, UITextEntryLine
-from src.data.storage import update_bird_status, save_all_birds, load_birds
+from src.data.storage import update_bird_status, save_all_birds, load_birds, delete_bird
 
 class BirdInfoCard(UIWindow):
     def __init__(self, rect, manager, bird_data, on_close_callback=None, on_tweeter_callback=None):
@@ -58,23 +58,38 @@ class BirdInfoCard(UIWindow):
             container=self
         )
 
-        # Archive Button
+        # Archive/Release Button
+        is_archived = self.bird_data.get('status') == 'archived'
+        btn_text = 'Release' if is_archived else 'Archive'
+
         self.archive_btn = UIButton(
             relative_rect=pygame.Rect((15, 210), (145, 35)),
-            text='Archive',
+            text=btn_text,
             manager=manager,
             container=self,
             object_id='#archive_button'
         )
 
-        # Tweeter Button
-        self.tweeter_btn = UIButton(
-            relative_rect=pygame.Rect((170, 210), (145, 35)),
-            text='Tweeter',
-            manager=manager,
-            container=self,
-            object_id='#tweeter_button'
-        )
+        # Second Button (Tweeter / Delete)
+        self.tweeter_btn = None
+        self.delete_btn = None
+        
+        if is_archived:
+             self.delete_btn = UIButton(
+                relative_rect=pygame.Rect((170, 210), (145, 35)),
+                text='Delete',
+                manager=manager,
+                container=self,
+                object_id='#delete_button'
+            )
+        else:
+            self.tweeter_btn = UIButton(
+                relative_rect=pygame.Rect((170, 210), (145, 35)),
+                text='Tweeter',
+                manager=manager,
+                container=self,
+                object_id='#tweeter_button'
+            )
 
     def switch_to_view_mode(self):
         self.clear_name_ui()
@@ -144,10 +159,17 @@ class BirdInfoCard(UIWindow):
             if event.ui_element == self.edit_btn:
                 self.switch_to_edit_mode()
             elif event.ui_element == self.archive_btn:
-                self.save_name() # Save name before archiving too
-                # Move to archive
-                update_bird_status(self.bird_data['id'], 'archived')
-                print(f"Archived bird {self.bird_data['id']}")
+                self.save_name() # Save name before action
+                
+                if self.bird_data.get('status') == 'archived':
+                     # Release
+                     update_bird_status(self.bird_data['id'], 'field')
+                     print(f"Released bird {self.bird_data['id']}")
+                else:
+                     # Archive
+                     update_bird_status(self.bird_data['id'], 'archived')
+                     print(f"Archived bird {self.bird_data['id']}")
+                     
                 self.kill()
                 if self.on_close_callback:
                     self.on_close_callback()
@@ -155,6 +177,12 @@ class BirdInfoCard(UIWindow):
                 self.save_name() # Save name before switching logic
                 if self.on_tweeter_callback:
                     self.on_tweeter_callback()
+            elif event.ui_element == self.delete_btn:
+                 delete_bird(self.bird_data['id'])
+                 print(f"Deleted bird {self.bird_data['id']}")
+                 self.kill()
+                 if self.on_close_callback:
+                     self.on_close_callback()
                     
     def on_close_window_button_pressed(self):
         self.save_name() # Save name on close
