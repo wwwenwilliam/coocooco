@@ -27,14 +27,36 @@
     },
     "#camera_button": {
         "colours": {
-            "normal_bg": "#00ff00",
-            "hovered_bg": "#33ff33"
+            "normal_bg": "#ffffff00",
+            "hovered_bg": "#ffffff00"
+        },
+        "images": {
+            "normal_image": {
+                "path": "assets/images/camera_button_normal.png"
+            },
+            "hovered_image": {
+                "path": "assets/images/camera_button_hovered.png"
+            }
+        },
+        "misc": {
+            "border_width": "0"
         }
     },
     "#birdchive_button": {
         "colours": {
-            "normal_bg": "#9900ff",
-            "hovered_bg": "#bb33ff"
+            "normal_bg": "#ffffff00",
+            "hovered_bg": "#ffffff00"
+        },
+        "images": {
+            "normal_image": {
+                "path": "assets/images/birdchive_button_normal.png"
+            },
+            "hovered_image": {
+                "path": "assets/images/birdchive_button_hovered.png"
+            }
+        },
+        "misc": {
+            "border_width": "0"
         }
     },
     "#back_button": {

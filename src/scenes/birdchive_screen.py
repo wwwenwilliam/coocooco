@@ -87,7 +87,7 @@ class BirdchiveScreen(Screen):
         surface.fill((240, 240, 255))
         font = pygame.font.Font(None, 48)
         text = font.render("Bird Archive", True, (0, 0, 0))
-        text_rect = text.get_rect(midtop=(self.window_size[0]//2, 15))
+        text_rect = text.get_rect(center=(self.window_size[0]//2, 60))
         surface.blit(text, text_rect)
 
     def cleanup(self):
@@ -102,9 +102,9 @@ class BirdchiveScreen(Screen):
         self.window_size = new_size
         
         if self.back_button:
-            self.back_button.set_relative_position((10, 10))
+            self.back_button.set_relative_position((20, 20))
             
         if self.bird_list:
             # Resize the list
-            self.bird_list.set_relative_position((20, 60))
-            self.bird_list.set_dimensions((self.window_size[0] - 40, self.window_size[1] - 80))
+            self.bird_list.set_relative_position((20, 120))
+            self.bird_list.set_dimensions((self.window_size[0] - 40, self.window_size[1] - 140))

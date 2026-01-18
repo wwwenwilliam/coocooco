@@ -59,14 +59,14 @@ class FieldScreen(Screen):
             btn_size = (120, 80)
             self.camera_button = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect((self.window_size[0] - btn_size[0] - 20, 20), btn_size),
-                text='Camera',
+                text='',
                 manager=self.manager,
                 object_id='#camera_button'
             )
 
             self.birdchive_button = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect((20, 20), btn_size),
-                text='Birdchive',
+                text='',
                 manager=self.manager,
                 object_id='#birdchive_button'
             )
