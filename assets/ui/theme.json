@@ -318,10 +318,10 @@
         },
         "images": {
             "normal_image": {
-                "path": "assets/ui/exit_button_normal.png"
+                "path": "assets/images/rage_button.png"
             },
             "hovered_image": {
-                "path": "assets/ui/exit_button_hovered.png"
+                "path": "assets/images/rage_button_hovered.png"
             }
         },
         "misc": {

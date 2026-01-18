@@ -70,6 +70,30 @@ class TweeterCard(UIWindow):
             container=self
         )
 
+    def set_dimensions(self, dimensions, clamp_to_container=False):
+        """Handle window resize by updating inner element positions and sizes."""
+        super().set_dimensions(dimensions, clamp_to_container)
+        
+        # Get the container rect (accounts for title bar)
+        container_rect = self.get_container().get_rect()
+        width = container_rect.width
+        height = container_rect.height
+        
+        # Update chat display - fills space with 10px margins, leaving room for input area
+        if hasattr(self, 'chat_display') and self.chat_display is not None:
+            self.chat_display.set_relative_position((10, 10))
+            self.chat_display.set_dimensions((width - 20, height - 100))
+        
+        # Update input line - bottom left, leaving room for send button
+        if hasattr(self, 'input_line') and self.input_line is not None:
+            self.input_line.set_relative_position((10, height - 80))
+            self.input_line.set_dimensions((width - 130, 40))
+        
+        # Update send button - bottom right
+        if hasattr(self, 'send_btn') and self.send_btn is not None:
+            self.send_btn.set_relative_position((width - 110, height - 80))
+            self.send_btn.set_dimensions((100, 40))
+        
     def _format_chat_html(self):
         """Format chat history as HTML for the text box."""
         lines = []

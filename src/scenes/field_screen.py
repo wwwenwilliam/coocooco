@@ -34,6 +34,8 @@ class FieldScreen(Screen):
         self.popup_timer = None 
         self.popup_container = None
         self.popup_ack_button = None
+        self.rage_delay_active = False  # True when waiting to show rage popup
+        self.rage_delay_timer = 0.0
 
     def setup(self, **kwargs):
         try:
@@ -154,10 +156,13 @@ class FieldScreen(Screen):
              # Create Tweeter Card
              # Fullscreen overlay with margin
              margin = 50
-             width = self.window_size[0] - (margin * 2)
-             height = self.window_size[1] - (margin * 2)
+             win_w, win_h = self.window_size
+             height = win_h - (margin * 2)
+             width = win_w - (margin * 2)
+             
              rect = pygame.Rect(0, 0, width, height)
-             rect.center = (self.window_size[0]//2, self.window_size[1]//2)
+             # Initial center (will be enforced by update loop)
+             rect.center = (win_w // 2, win_h // 2)
         
              def on_tweeter_close():
                  self.tweeter_card = None
@@ -166,49 +171,23 @@ class FieldScreen(Screen):
                  
                  # Check if we were in Rage Mode
                  if is_crashout:
-                     # Trigger Popup IMMEDIATELY
-                     print("DEBUG: Creating Rage Popup")
-                     # Use InfoCard image size
-                     try:
-                         # Load Image
-                         card_img = pygame.image.load("assets/images/infocard.png")
-                         panel_w, panel_h = card_img.get_size()
-                     except Exception as e:
-                         print(f"DEBUG: Failed to load popup image: {e}")
-                         panel_w, panel_h = 390, 315
-                         card_img = None
+                     # Auto-close info card on crashout (Rage Mode)
+                     if self.active_card:
+                          # Unpause bird so it doesn't freeze after rage
+                          if self.active_bird:
+                              self.active_bird.is_paused = False
+                          
+                          self.active_card.kill()
+                          self.active_card = None
                      
-                     rect = pygame.Rect(0, 0, panel_w, panel_h)
-                     rect.center = (self.window_size[0]//2, self.window_size[1]//2)
-                     
-                     # Transparent Container
-                     self.popup_container = UIPanel(
-                         relative_rect=rect,
-                         manager=self.manager,
-                         starting_height=2, # On top of everything
-                         object_id='#bird_info_card' # Re-use transparent style
-                     )
-                     
-                     if card_img:
-                         UIImage(relative_rect=pygame.Rect((0,0), (panel_w, panel_h)),
-                                 image_surface=card_img,
-                                 manager=self.manager,
-                                 container=self.popup_container)
-                             
-                     self.popup_ack_button = UIButton(
-                         relative_rect=pygame.Rect(0, -60, 120, 40), # Position near bottom
-                         text='',
-                         manager=self.manager,
-                         container=self.popup_container,
-                         object_id='#popup_exit_button',
-                         anchors={'centerx': 'centerx', 'bottom': 'bottom'}
-                     )
+                     # Start rage delay - disable interactions and wait before popup
+                     self.rage_delay_active = True
+                     self.rage_delay_timer = 3.0  # 3 seconds to watch chaos
+                     self._start_rage_music()  # Start evil theme
+                     print("DEBUG: Rage delay started - watching birds rage for 3 seconds...")
+                     return  # Don't re-enable info card
                  
-                 # Re-enable Bird Info Card regardless?
-                 if self.active_card:
-                      self.active_card.enable()
-                 
-                 # Re-enable Bird Info Card regardless?
+                 # if NOT crashout, re-enable the info card
                  if self.active_card:
                       self.active_card.enable()
             
@@ -224,41 +203,77 @@ class FieldScreen(Screen):
          # Reset pressed_bird after successful trigger
          self.pressed_bird = None 
 
-    def process_event(self, event):
-        # Handle Popup Interaction (Acknowledge)
-        if self.popup_container:
-            if event.type == pygame_gui.UI_BUTTON_PRESSED:
-                if event.ui_element == self.popup_ack_button:
-                    # Reset Rage
-                    GlobalState.get_instance().reset_rage()
-                    
-                    # Close Popup
-                    self.popup_container.kill()
-                    self.popup_container = None
-                    self.popup_ack_button = None
-                    return # Handled
+    def _start_rage_music(self):
+        """Fade out current music and play evil theme."""
+        try:
+            pygame.mixer.music.fadeout(500)  # 500ms fade out
+            pygame.mixer.music.load("assets/audio/evil_theme.mp3")
+            pygame.mixer.music.play(-1)  # Loop
+        except Exception as e:
+            print(f"Could not play evil music: {e}")
 
-        # 1. UI Buttons (Navigation) - DISABLE if Popup Active
+    def _restore_normal_music(self):
+        """Fade out evil music and restore normal theme."""
+        try:
+            pygame.mixer.music.fadeout(500)  # 500ms fade out
+            pygame.mixer.music.load("assets/audio/main_theme_updated.mp3")
+            pygame.mixer.music.play(-1)  # Loop
+        except Exception as e:
+            print(f"Could not restore normal music: {e}")
+
+    def _show_rage_popup(self):
+        """Show the rage popup after the delay period."""
+        from src.ui.rage_popup import RagePopup
+        from src.ui.credits_popup import CreditsPopup
+        
+        def on_credits_close():
+            self.popup_container = None
+            # Re-enable interactions implicitly by clearing container
+        
+        def on_rage_reset():
+            GlobalState.get_instance().reset_rage()
+            self._restore_normal_music()  # Restore normal music
+            # Chain to Credits Popup
+            self.popup_container = CreditsPopup(
+                manager=self.manager,
+                window_size=self.window_size,
+                on_close_callback=on_credits_close
+            )
+            
+        self.popup_container = RagePopup(
+           manager=self.manager, 
+           window_size=self.window_size,
+           on_ack_callback=on_rage_reset
+        )
+        print("DEBUG: Rage popup displayed")
+
+    def process_event(self, event):
+        if self.popup_container:
+           pass # RagePopup handles its own events now
+
+        # 1. UI Buttons (Navigation) - DISABLE if Popup Active or Rage Delay
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            if not self.popup_container: # Only allow if no popup
+            if not self.popup_container and not self.rage_delay_active: # Only allow if no popup/delay
                 if event.ui_element == self.camera_button:
                     self.screen_manager.switch_to('camera')
                 elif event.ui_element == self.birdchive_button:
                     self.screen_manager.switch_to('birdchive')
         
-        # 2. Block field interactions if a card is active
-        # Only block if Tweeter is open (fullscreen overlay)
-        # BirdInfoCard (active_card) should allow scrolling so it 'floats'
-        if self.tweeter_card:
+        # 2. Block field interactions if a card is active or rage delay
+        # Only block if Tweeter is open (fullscreen overlay) or during rage delay
+        if self.tweeter_card or self.rage_delay_active:
              return
 
         # Keyboard Scrolling
+        if self.popup_container:
+            pass # Allow scrolling but maybe block keys if desired? User said "scroll actually". assuming keys+drag.
+            
         if event.type == pygame.KEYDOWN:
-            scroll_speed = 10
-            if event.key == pygame.K_LEFT:
-                self.scroll_x = max(0, self.scroll_x - scroll_speed)
-            elif event.key == pygame.K_RIGHT:
-                self.scroll_x = min(self.max_scroll, self.scroll_x + scroll_speed)
+             scroll_speed = 10
+             if event.key == pygame.K_LEFT:
+                 self.scroll_x = max(0, self.scroll_x - scroll_speed)
+             elif event.key == pygame.K_RIGHT:
+                 self.scroll_x = min(self.max_scroll, self.scroll_x + scroll_speed)
         
         # Drag Scrolling
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -292,7 +307,10 @@ class FieldScreen(Screen):
                 self.last_mouse_x = mouse_x
                 self.scroll_velocity = dx 
 
-        # Bird click handling - Only if no card is active
+        # Bird click handling - Only if no card is active AND no popup
+        if self.popup_container:
+            return
+
         if not self.active_card:
             # Handle MOUSEBUTTONDOWN for press (capture bird)
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -330,6 +348,26 @@ class FieldScreen(Screen):
     def update(self, time_delta):
         self.birds.update(time_delta)
         
+        # RAGE DELAY TIMER - show popup after delay
+        if self.rage_delay_active:
+            self.rage_delay_timer -= time_delta
+            if self.rage_delay_timer <= 0:
+                self.rage_delay_active = False
+                self._show_rage_popup()
+        
+        # ACTIVE POPUP CENTERING
+        # Force the popup to stay in the middle of the screen, handling resizes robustly
+        if self.popup_container:
+            root_rect = self.manager.get_root_container().get_rect()
+            popup_rect = self.popup_container.get_relative_rect()
+            
+            target_x = (root_rect.width - popup_rect.width) // 2
+            target_y = (root_rect.height - popup_rect.height) // 2
+            
+            # Only update if different to avoid overhead
+            if (popup_rect.x != target_x) or (popup_rect.y != target_y):
+                self.popup_container.set_relative_position((target_x, target_y))
+
         # Update Card Position if active
         if self.active_card and self.card_world_pos:
             screen_x = int(self.card_world_pos.x - self.scroll_x)
@@ -490,4 +528,18 @@ class FieldScreen(Screen):
              btn_size = (120, 80)
              rect = pygame.Rect((20, 20), btn_size)
              self.birdchive_button.set_relative_position(rect.topleft)
+        
+        # 6. Resize TweeterCard (fullscreen with margin)
+        if self.tweeter_card:
+            margin = 50
+            width = self.window_size[0] - (margin * 2)
+            height = self.window_size[1] - (margin * 2)
+            
+            # Update dimensions first (triggers set_dimensions which updates inner elements)
+            self.tweeter_card.set_dimensions((width, height))
+            
+            # Recenter the card
+            center_x = (self.window_size[0] - width) // 2
+            center_y = (self.window_size[1] - height) // 2
+            self.tweeter_card.set_position((center_x, center_y))
 
