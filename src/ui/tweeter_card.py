@@ -186,32 +186,35 @@ class TweeterCard(UIWindow):
         user_text = " ".join([msg for sender, msg in self.chat_history if sender == "user"])
         if not user_text: return
         
-        print(f"Analyzing sentiment for: {user_text[:50]}...")
-        label = 'NEUTRAL'
-        score = 0.0
+        print(f"Analyzing traits for: {user_text[:50]}...")
         
-        try:
-            result = analyze_text(user_text)
-            label = result['label']
-            score = result['score']
-        except: pass
+        traits = ['Intelligent', 'Curious', 'Brave', 'Lazy', 'Friendly', 'Calm']
+        new_scores = analyze_text(user_text, candidate_labels=traits)
+        if not new_scores: return
         
-        print(f"Sentiment: {label} ({score:.2f})")
+        # Load existing scores
+        current_scores = self.bird_data.get('trait_scores', {})
         
-        # Simple trait assignment logic
-        new_trait = ""
-        # High confidence threshold
-        if score > 0.7:
-             if label == 'POSITIVE':
-                 if score > 0.9: new_trait = "Passionate"
-                 else: new_trait = "Friendly"
-             elif label == 'NEGATIVE':
-                 if score > 0.9: new_trait = "Grumpy"
-                 else: new_trait = "Cautious"
-        else:
-             print(f"Sentiment confidence too low ({score:.2f}) - No trait assigned.")
-             
-        if new_trait:
-            print(f"Assigning new personality trait: {new_trait}")
-            self.bird_data['personality'] = new_trait
-            update_bird_data(self.bird_data['id'], self.bird_data)
+        # Merge/Init (alpha blending)
+        updated_scores = {}
+        alpha = 0.5 # 50% update rate
+        
+        for trait in traits:
+            old = current_scores.get(trait, 0.0)
+            new = new_scores.get(trait, 0.0)
+            updated_scores[trait] = old * (1 - alpha) + new * alpha
+            
+        # Determine dominant trait
+        dominant_trait = max(updated_scores, key=updated_scores.get)
+        
+        print(f"Updated Composite Traits: {updated_scores}")
+        print(f"New Personality: {dominant_trait}")
+        
+        self.bird_data['trait_scores'] = updated_scores
+        self.bird_data['personality'] = dominant_trait
+        
+        # Clear legacy emotions
+        if 'emotion_scores' in self.bird_data:
+            del self.bird_data['emotion_scores']
+            
+        update_bird_data(self.bird_data['id'], self.bird_data)
