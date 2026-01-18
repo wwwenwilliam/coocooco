@@ -12,6 +12,7 @@ class FieldScreen(Screen):
     def __init__(self, screen_manager, manager, window_size):
         super().__init__(screen_manager, manager, window_size)
         self.background = None
+        self.foreground = None
         self.scroll_x = 0
         self.max_scroll = 0
         self.birds = pygame.sprite.Group()
@@ -36,6 +37,14 @@ class FieldScreen(Screen):
             new_height = self.window_size[1]
             new_width = int(new_height * aspect_ratio)
             self.background = pygame.transform.scale(self.background, (new_width, new_height))
+            
+            # Load Foreground
+            try:
+                self.foreground = pygame.image.load("assets/images/foreground.png")
+                self.foreground = pygame.transform.scale(self.foreground, (new_width, new_height))
+            except pygame.error:
+                print("Could not load foreground image")
+
             # Calculate max scrolling distance
             world_width = new_width
             self.max_scroll = max(0, new_width - self.window_size[0])
@@ -290,6 +299,9 @@ class FieldScreen(Screen):
             
         for bird in self.birds:
             bird.draw(surface, self.scroll_x)
+
+        if self.foreground:
+            surface.blit(self.foreground, (-self.scroll_x, 0))
             
 
     def cleanup(self):
@@ -359,6 +371,16 @@ class FieldScreen(Screen):
                 self.background = pygame.transform.scale(original, (new_w, new_h))
             except:
                 pass
+                
+            # Resize Foreground
+            if self.foreground:
+                 try:
+                    original_fg = pygame.image.load("assets/images/foreground.png")
+                    # Use same dimensions as background
+                    fg_w, fg_h = self.background.get_size()
+                    self.foreground = pygame.transform.scale(original_fg, (fg_w, fg_h))
+                 except:
+                    pass
 
         # 2. Update Scroll Limit
         # World width is fixed by background usually, but if dynamic:
