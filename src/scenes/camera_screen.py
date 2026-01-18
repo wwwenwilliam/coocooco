@@ -41,9 +41,9 @@ class CameraScreen(Screen):
         # Capture Button (Bottom Center-ish)
         # Centered horizontally, near bottom
         btn_width = 120
-        btn_height = 50
+        btn_height = 80
         x_pos = (self.window_size[0] - btn_width) // 2
-        y_pos = self.window_size[1] - 80 
+        y_pos = self.window_size[1] - 110 
 
         self.capture_btn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((x_pos, y_pos), (btn_width, btn_height)),

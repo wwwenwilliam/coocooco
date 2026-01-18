@@ -81,8 +81,8 @@
     },
     "#capture_button": {
         "colours": {
-            "normal_bg": "#ff0099",
-            "hovered_bg": "#ff33bb"
+            "normal_bg": "#ffffff00",
+            "hovered_bg": "#ffffff00"
         },
         "images": {
             "normal_image": {
