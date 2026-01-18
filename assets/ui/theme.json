@@ -16,7 +16,7 @@
         "colours": {
             "normal_bg": "#ff6600",
             "hovered_bg": "#ff8833",
-            "active_bg": "#cc5500",
+            "active_bg": "#ffffff00",
             "normal_text": "#ffffff",
             "hovered_text": "#ffffff"
         },
@@ -75,7 +75,8 @@
             }
         },
         "misc": {
-            "border_width": "0"
+            "border_width": "0",
+            "shadow_width": "0"
         }
     },
     "#capture_button": {
