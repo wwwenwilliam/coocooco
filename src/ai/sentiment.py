@@ -11,26 +11,37 @@ def get_pipeline():
         # Device logic: check for cuda
         device = 0 if torch.cuda.is_available() else -1
         try:
-            _sentiment_pipeline = pipeline("sentiment-analysis", device=device)
+            # Zero-Shot Classification for custom traits
+            # Using distilbart-mnli-12-1 for speed/efficiency
+            _sentiment_pipeline = pipeline("zero-shot-classification", model="valhalla/distilbart-mnli-12-1", device=device)
         except Exception as e:
-            print(f"Failed to load sentiment pipeline on device {device}, trying CPU. Error: {e}")
-            _sentiment_pipeline = pipeline("sentiment-analysis", device=-1)
+            print(f"Failed to load pipeline on device {device}, trying CPU. Error: {e}")
+            _sentiment_pipeline = pipeline("zero-shot-classification", model="valhalla/distilbart-mnli-12-1", device=-1)
             
     return _sentiment_pipeline
 
-def analyze_text(text):
+def analyze_text(text, candidate_labels=None):
     """
-    Analyzes text and returns a score/label.
-    Returns: {'label': 'POSITIVE'|'NEGATIVE', 'score': float}
+    Analyzes text against candidate trait labels.
+    Returns: Dict[str, float] (e.g., {'Intelligent': 0.8, 'Lazy': 0.1})
     """
     if not text or not text.strip():
-        return {'label': 'NEUTRAL', 'score': 0.0}
+        return {}
         
+    if candidate_labels is None:
+        candidate_labels = ['Intelligent', 'Curious', 'Brave', 'Lazy', 'Friendly']
+
     try:
         pipe = get_pipeline()
-        # Truncate to 512 chars to match model limit typically
-        result = pipe(text[:512])[0]
-        return result
+        # multi_label=True allows multiple traits to apply independently? 
+        # Or False to force them to sum to 1? User probably wants relative dominance.
+        # False (default) makes them mutually exclusive (sum=1). 
+        # Given "score them", mutex is good for finding the DOMINANT one.
+        result = pipe(text[:512], candidate_labels, multi_label=False)
+        
+        # Result format: {'labels': [...], 'scores': [...]}
+        scores = {label: score for label, score in zip(result['labels'], result['scores'])}
+        return scores
     except Exception as e:
-        print(f"Sentiment analysis failed: {e}")
-        return {'label': 'NEUTRAL', 'score': 0.0}
+        print(f"Trait analysis failed: {e}")
+        return {}
