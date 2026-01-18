@@ -12,25 +12,32 @@ class BirdInfoCard(UIWindow):
 
         # Layout
         # Image
-        img_rect = pygame.Rect((10, 10), (200, 200))
+        img_rect = pygame.Rect((15, 15), (180, 180))
         # Try load image
         image_path = bird_data.get('cropped_path') or bird_data.get('image_path')
-        self.bird_image_view = None # Renamed to avoid overwriting UIWindow.image
+        self.bird_image_view = None 
         
         if image_path:
              try:
                 loaded_image = pygame.image.load(image_path)
+                loaded_image = pygame.transform.scale(loaded_image, (180, 180))
                 self.bird_image_view = UIImage(relative_rect=img_rect, image_surface=loaded_image, manager=manager, container=self)
              except:
                 UILabel(relative_rect=img_rect, text="No Image", manager=manager, container=self)
         
         # Info
+        col_x = 210
+        # Dynamic label width based on card width
+        # self.rect.width is the total width
+        # Padding right = 10
+        label_w = self.rect.width - col_x - 10
+        
         species = bird_data.get('species', 'Unknown')
-        UILabel(relative_rect=pygame.Rect((220, 10), (100, 30)), text="Species:", manager=manager, container=self)
-        UILabel(relative_rect=pygame.Rect((220, 35), (100, 30)), text=species, manager=manager, container=self)
+        UILabel(relative_rect=pygame.Rect((col_x, 15), (label_w, 30)), text="Species:", manager=manager, container=self, object_id='#info_header')
+        UILabel(relative_rect=pygame.Rect((col_x, 40), (label_w, 30)), text=species, manager=manager, container=self)
         
         # Name Section
-        UILabel(relative_rect=pygame.Rect((220, 70), (100, 30)), text="Name:", manager=manager, container=self)
+        UILabel(relative_rect=pygame.Rect((col_x, 80), (label_w, 30)), text="Name:", manager=manager, container=self, object_id='#info_header')
         
         self.name_label = None
         self.edit_btn = None
@@ -53,7 +60,7 @@ class BirdInfoCard(UIWindow):
 
         # Archive Button
         self.archive_btn = UIButton(
-            relative_rect=pygame.Rect((220, 170), (100, 30)),
+            relative_rect=pygame.Rect((15, 210), (145, 35)),
             text='Archive',
             manager=manager,
             container=self,
@@ -62,7 +69,7 @@ class BirdInfoCard(UIWindow):
 
         # Tweeter Button
         self.tweeter_btn = UIButton(
-            relative_rect=pygame.Rect((220, 210), (100, 30)),
+            relative_rect=pygame.Rect((170, 210), (145, 35)),
             text='Tweeter',
             manager=manager,
             container=self,
@@ -72,13 +79,15 @@ class BirdInfoCard(UIWindow):
     def switch_to_view_mode(self):
         self.clear_name_ui()
         name = self.bird_data.get('name', 'Unnamed')
-        self.name_label = UILabel(relative_rect=pygame.Rect((220, 95), (100, 30)), text=name, manager=self.ui_manager, container=self, object_id='#name_label')
-        self.edit_btn = UIButton(relative_rect=pygame.Rect((220, 130), (100, 30)), text='Edit', manager=self.ui_manager, container=self, object_id='#edit_button')
+        label_w = self.rect.width - 210 - 10
+        self.name_label = UILabel(relative_rect=pygame.Rect((210, 105), (label_w, 30)), text=name, manager=self.ui_manager, container=self, object_id='#name_label')
+        self.edit_btn = UIButton(relative_rect=pygame.Rect((210, 140), (100, 30)), text='Edit', manager=self.ui_manager, container=self, object_id='#edit_button')
 
     def switch_to_edit_mode(self):
         self.clear_name_ui()
+        label_w = self.rect.width - 210 - 10
         self.name_entry = UITextEntryLine(
-            relative_rect=pygame.Rect((220, 95), (100, 30)),
+            relative_rect=pygame.Rect((210, 105), (label_w, 30)),
             manager=self.ui_manager,
             container=self,
             object_id='#name_entry'
