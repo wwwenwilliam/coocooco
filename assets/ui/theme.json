@@ -63,8 +63,19 @@
     },
     "#back_button": {
         "colours": {
-            "normal_bg": "#ff9900",
-            "hovered_bg": "#ffbb33"
+            "normal_bg": "#ffffff00",
+            "hovered_bg": "#ffffff00"
+        },
+        "images": {
+            "normal_image": {
+                "path": "assets/images/back_button_normal.png"
+            },
+            "hovered_image": {
+                "path": "assets/images/back_button_hovered.png"
+            }
+        },
+        "misc": {
+            "border_width": "0"
         }
     },
     "#capture_button": {

@@ -14,7 +14,7 @@ class BirdchiveScreen(Screen):
     def setup(self, **kwargs):
         self.back_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((20, 20), (120, 80)),
-            text='Back',
+            text='',
             manager=self.manager,
             object_id='#back_button'
         )
